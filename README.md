@@ -1,7 +1,7 @@
-# python-doctor
+# py-doctor
 
-[![PyPI version](https://img.shields.io/pypi/v/python-doctor?style=flat&colorA=000000&colorB=000000)](https://pypi.org/project/python-doctor/)
-[![Downloads](https://img.shields.io/pypi/dm/python-doctor?style=flat&colorA=000000&colorB=000000)](https://pypi.org/project/python-doctor/)
+[![PyPI version](https://img.shields.io/pypi/v/py-doctor?style=flat&colorA=000000&colorB=000000)](https://pypi.org/project/py-doctor/)
+[![Downloads](https://img.shields.io/pypi/dm/py-doctor?style=flat&colorA=000000&colorB=000000)](https://pypi.org/project/py-doctor/)
 
 Diagnose your Python project's health. One command scans your codebase for security, performance, correctness, and architecture issues, then outputs a **0-100 score** with actionable diagnostics.
 
@@ -21,21 +21,21 @@ Diagnostics are filtered through your config, then scored by severity (errors we
 Run instantly with uvx (no install needed):
 
 ```bash
-uvx python-doctor .
+uvx py-doctor .
 ```
 
 Or install globally:
 
 ```bash
-uv tool install python-doctor
+uv tool install py-doctor
 # or
-pip install python-doctor
+pip install py-doctor
 ```
 
 Use `--verbose` to see affected files and line numbers:
 
 ```bash
-python-doctor . --verbose
+py-doctor . --verbose
 ```
 
 ## Install for your coding agent
@@ -44,7 +44,7 @@ Add the skill to your Claude Code, Cursor, or other AI coding agent:
 
 ```bash
 # Claude Code
-cp skills/python-doctor/SKILL.md .claude/skills/python-doctor.md
+cp skills/py-doctor/SKILL.md .claude/skills/py-doctor.md
 ```
 
 Or reference the AGENTS.md in your project root — it's automatically picked up by Claude Code, Cursor, Windsurf, and others.
@@ -58,16 +58,16 @@ Or reference the AGENTS.md in your project root — it's automatically picked up
 - uses: actions/setup-python@v5
   with:
     python-version: "3.12"
-- name: Run Python Doctor
+- name: Run Py Doctor
   run: |
-    pip install python-doctor
-    python-doctor . --verbose --diff main --fail-on error
+    pip install py-doctor
+    py-doctor . --verbose --diff main --fail-on error
 ```
 
 ## Options
 
 ```
-Usage: python-doctor [OPTIONS] [DIRECTORY]
+Usage: py-doctor [OPTIONS] [DIRECTORY]
 
 Options:
   -v, --version                   Show the version and exit.
@@ -82,7 +82,7 @@ Options:
 
 ## Configuration
 
-Create a `python-doctor.toml` in your project root:
+Create a `py-doctor.toml` in your project root:
 
 ```toml
 [options]
@@ -99,16 +99,16 @@ files = ["tests/fixtures/**", "migrations/**"]
 Or use `pyproject.toml`:
 
 ```toml
-[tool.python-doctor]
+[tool.py-doctor]
 lint = true
 dead_code = true
 
-[tool.python-doctor.ignore]
+[tool.py-doctor.ignore]
 rules = ["no-import-in-function"]
 files = ["tests/fixtures/**"]
 ```
 
-If both exist, `python-doctor.toml` takes precedence. CLI flags always override config values.
+If both exist, `py-doctor.toml` takes precedence. CLI flags always override config values.
 
 ## Rules
 
@@ -187,11 +187,11 @@ print(result.project)      # Detected framework, Python version, etc.
 ## Contributing
 
 ```bash
-git clone https://github.com/themohitkhare/pythondoctor
-cd pythondoctor
+git clone https://github.com/themohitkhare/py-doctor
+cd py-doctor
 uv sync --all-extras
 uv run pytest
-uv run python-doctor .  # dogfood it
+uv run py-doctor .  # dogfood it
 ```
 
 ## License

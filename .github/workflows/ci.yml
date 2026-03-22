@@ -26,8 +26,8 @@ jobs:
       - name: Run tests
         run: uv run pytest --tb=short -q
 
-      - name: Run python-doctor on itself
-        run: uv run python-doctor . --fail-on error
+      - name: Run py-doctor on itself
+        run: uv run py-doctor . --fail-on error
 
   lint:
     runs-on: ubuntu-latest

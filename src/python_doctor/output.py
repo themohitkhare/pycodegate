@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+import json
+import sys
+
 from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
 
+from python_doctor import __version__
 from python_doctor.types import Diagnostic, ScanResult, Severity
 
 BAR_WIDTH = 50
@@ -83,7 +87,7 @@ def print_scan_result(result: ScanResult, verbose: bool = False) -> None:
     # Project info
     p = result.project
     console.print()
-    console.print("  [bold]Python Doctor[/bold] — v0.1.0")
+    console.print("  [bold]Py Doctor[/bold] — v0.1.0")
     console.print()
     console.print(f"  [dim]Path:[/dim]            {p.path}")
     if p.framework:
@@ -120,6 +124,43 @@ def print_scan_result(result: ScanResult, verbose: bool = False) -> None:
 
     console.print(Panel(summary, title="[bold]Results[/bold]", border_style=color))
     console.print()
+
+
+def output_json(result: ScanResult) -> None:
+    """Output the scan result as structured JSON to stdout."""
+    p = result.project
+    errors = sum(1 for d in result.diagnostics if d.severity == Severity.ERROR)
+    warnings = sum(1 for d in result.diagnostics if d.severity == Severity.WARNING)
+
+    payload = {
+        "version": __version__,
+        "path": p.path,
+        "score": result.score.value,
+        "label": result.score.label,
+        "errors": errors,
+        "warnings": warnings,
+        "elapsed_ms": result.elapsed_ms,
+        "project": {
+            "framework": p.framework,
+            "python_version": p.python_version,
+            "package_manager": p.package_manager,
+            "test_framework": p.test_framework,
+            "source_file_count": p.source_file_count,
+        },
+        "diagnostics": [
+            {
+                "rule": d.rule,
+                "severity": d.severity.value,
+                "category": d.category.value,
+                "message": d.message,
+                "help": d.help,
+                "file_path": d.file_path,
+                "line": d.line,
+            }
+            for d in result.diagnostics
+        ],
+    }
+    sys.stdout.write(json.dumps(payload, indent=2) + "\n")
 
 
 def _print_diagnostics(console: Console, diagnostics: list[Diagnostic], verbose: bool) -> None:

@@ -28,7 +28,7 @@ Run checks before committing:
 
 ```bash
 uv run pytest                # runs all tests
-uv run python-doctor . -v    # dogfood on ourselves
+uv run py-doctor . -v    # dogfood on ourselves
 ```
 
 ## Architecture
@@ -39,7 +39,7 @@ src/python_doctor/
   api.py          — Programmatic API (diagnose function)
   scan.py         — Orchestrator: parallel lint + dead code
   score.py        — Score calculation from diagnostics
-  config.py       — Config loading (python-doctor.toml / pyproject.toml)
+  config.py       — Config loading (py-doctor.toml / pyproject.toml)
   discover.py     — Project detection (framework, package manager, etc.)
   output.py       — Rich terminal output
   types.py        — All data types (Diagnostic, Score, etc.)

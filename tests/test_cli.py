@@ -1,3 +1,5 @@
+import json
+
 from click.testing import CliRunner
 
 from python_doctor.cli import main
@@ -7,7 +9,7 @@ def test_cli_help():
     runner = CliRunner()
     result = runner.invoke(main, ["--help"])
     assert result.exit_code == 0
-    assert "Python Doctor" in result.output or "python-doctor" in result.output
+    assert "Py Doctor" in result.output or "py-doctor" in result.output
 
 
 def test_cli_version():
@@ -52,3 +54,20 @@ def test_cli_fail_on_none(tmp_path):
     runner = CliRunner()
     result = runner.invoke(main, [str(tmp_path), "--fail-on", "none"])
     assert result.exit_code == 0
+
+
+def test_cli_json_output(tmp_path):
+    (tmp_path / "app.py").write_text("x = 1\n")
+    runner = CliRunner()
+    result = runner.invoke(main, [str(tmp_path), "--json"])
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    for key in ("version", "path", "score", "label", "errors", "warnings", "elapsed_ms", "project", "diagnostics"):
+        assert key in data, f"Missing key: {key}"
+    project = data["project"]
+    for key in ("framework", "python_version", "package_manager", "test_framework", "source_file_count"):
+        assert key in project, f"Missing project key: {key}"
+    assert isinstance(data["diagnostics"], list)
+    assert isinstance(data["score"], int)
+    assert isinstance(data["errors"], int)
+    assert isinstance(data["warnings"], int)

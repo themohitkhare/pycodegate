@@ -1,5 +1,5 @@
 [project]
-name = "python-doctor"
+name = "py-doctor"
 version = "0.1.0"
 description = "Diagnose your Python project's health. Get a score, find issues, fix them."
 readme = "README.md"
@@ -29,9 +29,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/themohitkhare/pythondoctor"
-Repository = "https://github.com/themohitkhare/pythondoctor"
-Issues = "https://github.com/themohitkhare/pythondoctor/issues"
+Homepage = "https://github.com/themohitkhare/py-doctor"
+Repository = "https://github.com/themohitkhare/py-doctor"
+Issues = "https://github.com/themohitkhare/py-doctor/issues"
 
 [project.optional-dependencies]
 dev = [
@@ -41,7 +41,7 @@ dev = [
 ]
 
 [project.scripts]
-python-doctor = "python_doctor.cli:main"
+py-doctor = "python_doctor.cli:main"
 
 [build-system]
 requires = ["hatchling"]
@@ -69,6 +69,6 @@ ignore = ["SIM102"]  # nested ifs in AST walking are clearer than combined condi
 "src/python_doctor/rules/base.py" = ["TC001"]  # runtime import in abstract method
 "src/python_doctor/utils/*.py" = ["E501"]
 
-[tool.python-doctor]
-[tool.python-doctor.ignore]
+[tool.py-doctor]
+[tool.py-doctor.ignore]
 files = ["tests/fixtures/**"]
