@@ -62,3 +62,4 @@ class ScanResult:
     diagnostics: list[Diagnostic]
     project: ProjectInfo
     elapsed_ms: int
+    profile: str | None = None

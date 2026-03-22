@@ -1,16 +1,18 @@
-"""Rich terminal output: score bar, doctor face, framed summary, diagnostic groups."""
+"""Rich terminal output: score bar, doctor face, framed summary, category-grouped diagnostics."""
 
 from __future__ import annotations
 
 import json
 import sys
+from collections import defaultdict
 
 from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
 
 from python_doctor import __version__
-from python_doctor.types import Diagnostic, ScanResult, Severity
+from python_doctor.constants import CATEGORY_WEIGHTS, FRAMEWORK_CATEGORY_MAP
+from python_doctor.types import Category, Diagnostic, ScanResult, Severity
 
 BAR_WIDTH = 50
 
@@ -36,13 +38,26 @@ _SAD = r"""
   └─────┘
 """
 
+# Display metadata for each category
+CATEGORY_DISPLAY: dict[Category, tuple[str, str]] = {
+    Category.SECURITY: ("🔒", "Security"),
+    Category.CORRECTNESS: ("✓", "Correctness"),
+    Category.COMPLEXITY: ("⚡", "Complexity"),
+    Category.ARCHITECTURE: ("🏗", "Architecture"),
+    Category.PERFORMANCE: ("🐎", "Performance"),
+    Category.STRUCTURE: ("📁", "Structure"),
+    Category.IMPORTS: ("📦", "Imports"),
+    Category.DEAD_CODE: ("💀", "Dead Code"),
+    Category.DEPENDENCIES: ("🛡", "Dependencies"),
+}
+
 
 def format_score_bar(score: int) -> str:
     """Return a text-based score bar."""
     filled = round(score / 100 * BAR_WIDTH)
     empty = BAR_WIDTH - filled
     bar = "█" * filled + "░" * empty
-    return f"  {bar} {score}/100"
+    return f"  {bar} {score}"
 
 
 def format_doctor_face(score: int) -> str:
@@ -61,6 +76,42 @@ def _score_color(score: int) -> str:
     elif score >= 50:
         return "yellow"
     return "red"
+
+
+def _compute_category_sub_scores(
+    diagnostics: list[Diagnostic],
+) -> dict[Category, tuple[int, int]]:
+    """Return {resolved_category: (earned, max)} for each category in CATEGORY_WEIGHTS."""
+    total_weight = sum(CATEGORY_WEIGHTS.values())
+    max_deductions = {cat: round(w / total_weight * 100) for cat, w in CATEGORY_WEIGHTS.items()}
+    # Fix rounding to ensure sum == 100
+    diff = 100 - sum(max_deductions.values())
+    if diff != 0:
+        highest = max(CATEGORY_WEIGHTS, key=lambda k: CATEGORY_WEIGHTS[k])
+        max_deductions[highest] += diff
+
+    # Group diagnostics by resolved category
+    by_category: dict[Category, list[Diagnostic]] = defaultdict(list)
+    for d in diagnostics:
+        resolved = FRAMEWORK_CATEGORY_MAP.get(d.category, d.category)
+        by_category[resolved].append(d)
+
+    # Compute actual deduction per category (same logic as score.py)
+    actual_deductions: dict[Category, float] = {}
+    for cat, diags in by_category.items():
+        costs = sorted([d.cost for d in diags], reverse=True)
+        cat_total = sum(c if i < 3 else c * 0.1 for i, c in enumerate(costs))
+        cap = max_deductions.get(cat, 10)
+        actual_deductions[cat] = min(cat_total, cap)
+
+    # Build (earned, max) per category
+    result: dict[Category, tuple[int, int]] = {}
+    for cat, max_ded in max_deductions.items():
+        deducted = round(actual_deductions.get(cat, 0.0))
+        earned = max_ded - deducted
+        result[cat] = (earned, max_ded)
+
+    return result
 
 
 def format_summary(result: ScanResult) -> str:
@@ -84,26 +135,25 @@ def print_scan_result(result: ScanResult, verbose: bool = False) -> None:
     """Print the full scan result to terminal using Rich."""
     console = Console()
 
-    # Project info
+    # Project info header
     p = result.project
     console.print()
     console.print("  [bold]Py Gate[/bold] — v0.1.0")
     console.print()
     console.print(f"  [dim]Path:[/dim]            {p.path}")
-    if p.framework:
-        console.print(f"  [dim]Framework:[/dim]       {p.framework}")
     if p.python_version:
         console.print(f"  [dim]Python:[/dim]          {p.python_version}")
     if p.package_manager:
         console.print(f"  [dim]Package manager:[/dim] {p.package_manager}")
     if p.test_framework:
         console.print(f"  [dim]Test framework:[/dim]  {p.test_framework}")
+    if result.profile:
+        console.print(f"  [dim]Profile:[/dim]         {result.profile}")
     console.print(f"  [dim]Source files:[/dim]    {p.source_file_count}")
     console.print()
 
-    # Diagnostics grouped by rule
-    if result.diagnostics:
-        _print_diagnostics(console, result.diagnostics, verbose)
+    # Category-grouped diagnostics with sub-scores
+    _print_category_groups(console, result.diagnostics, verbose)
 
     # Summary panel
     color = _score_color(result.score.value)
@@ -163,31 +213,58 @@ def output_json(result: ScanResult) -> None:
     sys.stdout.write(json.dumps(payload, indent=2) + "\n")
 
 
-def _print_diagnostics(console: Console, diagnostics: list[Diagnostic], verbose: bool) -> None:
-    """Print diagnostics grouped by rule, sorted by severity."""
-    groups: dict[str, list[Diagnostic]] = {}
+def _print_category_groups(
+    console: Console,
+    diagnostics: list[Diagnostic],
+    verbose: bool,
+) -> None:
+    """Print diagnostics grouped by category with sub-scores."""
+    sub_scores = _compute_category_sub_scores(diagnostics)
+
+    # Build rule-grouped diagnostics per resolved category
+    by_category: dict[Category, list[Diagnostic]] = defaultdict(list)
     for d in diagnostics:
-        groups.setdefault(d.rule, []).append(d)
+        resolved = FRAMEWORK_CATEGORY_MAP.get(d.category, d.category)
+        by_category[resolved].append(d)
 
-    sorted_rules = sorted(
-        groups.keys(),
-        key=lambda r: (0 if groups[r][0].severity == Severity.ERROR else 1, r),
-    )
+    # Iterate in canonical order (CATEGORY_WEIGHTS order)
+    for cat in CATEGORY_WEIGHTS:
+        if cat not in CATEGORY_DISPLAY:
+            continue
+        emoji, name = CATEGORY_DISPLAY[cat]
+        earned, maximum = sub_scores.get(cat, (CATEGORY_WEIGHTS[cat], CATEGORY_WEIGHTS[cat]))
+        # Recompute max from sub_scores (already normalised to 100-point scale)
+        cat_diags = by_category.get(cat, [])
 
-    for rule in sorted_rules:
-        diags = groups[rule]
-        first = diags[0]
-        icon = "[red]✗[/red]" if first.severity == Severity.ERROR else "[yellow]⚠[/yellow]"
-        count = len(diags)
+        if earned == maximum:
+            # Perfect score for this category
+            console.print(
+                f"  [bold]{emoji} {name}[/bold] "
+                f"[green]({earned}/{maximum})[/green] [green]✓[/green]"
+            )
+            console.print("    [green]✓ All clear.[/green]")
+        else:
+            console.print(f"  [bold]{emoji} {name}[/bold] [yellow]({earned}/{maximum})[/yellow]")
+            # Group by rule within this category
+            by_rule: dict[str, list[Diagnostic]] = defaultdict(list)
+            for d in cat_diags:
+                by_rule[d.rule].append(d)
 
-        console.print(f"  {icon} [bold]{first.message}[/bold]  [dim]({rule} × {count})[/dim]")
-        if first.help:
-            console.print(f"    [dim]{first.help}[/dim]")
-
-        if verbose:
-            for d in diags[:10]:
-                console.print(f"    [dim]{d.file_path}:{d.line}[/dim]")
-            if count > 10:
-                console.print(f"    [dim]... and {count - 10} more[/dim]")
+            # Sort: errors first, then by rule name
+            sorted_rules = sorted(
+                by_rule.keys(),
+                key=lambda r: (0 if by_rule[r][0].severity == Severity.ERROR else 1, r),
+            )
+            for rule in sorted_rules:
+                rule_diags = by_rule[rule]
+                count = len(rule_diags)
+                sev = rule_diags[0].severity
+                icon = "[red]✗[/red]" if sev == Severity.ERROR else "[yellow]⚠[/yellow]"
+                console.print(f"    {icon} {rule} × {count}")
+                if verbose:
+                    for d in rule_diags[:10]:
+                        console.print(f"      [dim]{d.file_path}:{d.line}[/dim]")
+                    if count > 10:
+                        console.print(f"      [dim]... and {count - 10} more[/dim]")
 
         console.print()
