@@ -202,7 +202,7 @@ wheels = [
 ]
 
 [[package]]
-name = "py-gate"
+name = "pycodegate"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

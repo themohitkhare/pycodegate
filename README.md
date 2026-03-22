@@ -3,7 +3,7 @@
   <strong>One command. One score. Your Python quality gate.</strong>
 </p>
 <p align="center">
-  <a href="https://github.com/themohitkhare/py-gate/actions/workflows/ci.yml"><img src="https://github.com/themohitkhare/py-gate/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/themohitkhare/pycodegate/actions/workflows/ci.yml"><img src="https://github.com/themohitkhare/pycodegate/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://pypi.org/project/py-gate/"><img src="https://img.shields.io/pypi/v/py-gate" alt="PyPI"></a>
   <a href="https://pypi.org/project/py-gate/"><img src="https://img.shields.io/pypi/pyversions/py-gate" alt="Python"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
@@ -113,7 +113,7 @@ Add the skill to your project:
 
 ```bash
 mkdir -p .claude/skills
-curl -fsSL https://raw.githubusercontent.com/themohitkhare/py-gate/main/skills/py-gate/SKILL.md \
+curl -fsSL https://raw.githubusercontent.com/themohitkhare/pycodegate/main/skills/py-gate/SKILL.md \
   -o .claude/skills/py-gate.md
 ```
 
@@ -304,8 +304,8 @@ repos:
 ## Contributing
 
 ```bash
-git clone https://github.com/themohitkhare/py-gate
-cd py-gate
+git clone https://github.com/themohitkhare/pycodegate
+cd pycodegate
 uv sync --all-extras
 uv run pytest -q
 uv run py-gate . --verbose  # dogfood it
