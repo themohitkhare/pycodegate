@@ -62,10 +62,28 @@ def test_cli_json_output(tmp_path):
     result = runner.invoke(main, [str(tmp_path), "--json"])
     assert result.exit_code == 0
     data = json.loads(result.output)
-    for key in ("version", "path", "score", "label", "errors", "warnings", "elapsed_ms", "project", "diagnostics"):
+    expected_keys = (
+        "version",
+        "path",
+        "score",
+        "label",
+        "errors",
+        "warnings",
+        "elapsed_ms",
+        "project",
+        "diagnostics",
+    )
+    for key in expected_keys:
         assert key in data, f"Missing key: {key}"
     project = data["project"]
-    for key in ("framework", "python_version", "package_manager", "test_framework", "source_file_count"):
+    project_keys = (
+        "framework",
+        "python_version",
+        "package_manager",
+        "test_framework",
+        "source_file_count",
+    )
+    for key in project_keys:
         assert key in project, f"Missing project key: {key}"
     assert isinstance(data["diagnostics"], list)
     assert isinstance(data["score"], int)

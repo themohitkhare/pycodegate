@@ -16,6 +16,7 @@ class Category(str, Enum):
     PERFORMANCE = "Performance"
     ARCHITECTURE = "Architecture"
     CORRECTNESS = "Correctness"
+    COMPLEXITY = "Complexity"
     DEAD_CODE = "Dead Code"
     DJANGO = "Django"
     FASTAPI = "FastAPI"

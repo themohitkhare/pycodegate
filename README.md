@@ -75,9 +75,55 @@ Options:
   --dead-code / --no-dead-code    Enable/disable dead code detection.
   --verbose                       Show file details per rule.
   --score                         Output only the numeric score.
+  --json                          Structured JSON output (for AI agents).
+  --fix                           Auto-fix issues via ruff before scanning.
   --diff TEXT                     Scan only files changed vs base branch.
   --fail-on [error|warning|none]  Exit with code 1 on this severity level.
   -h, --help                      Show this message and exit.
+```
+
+### JSON Output
+
+The `--json` flag returns machine-readable output that AI agents can parse:
+
+```bash
+py-doctor . --json
+```
+
+```json
+{
+  "version": "0.1.0",
+  "path": ".",
+  "score": 98,
+  "label": "Great",
+  "errors": 0,
+  "warnings": 5,
+  "elapsed_ms": 177,
+  "project": {
+    "framework": null,
+    "python_version": "3.10",
+    "package_manager": "uv",
+    "test_framework": "pytest"
+  },
+  "diagnostics": [
+    {
+      "rule": "high-complexity",
+      "severity": "warning",
+      "category": "Complexity",
+      "message": "Function 'process' has cyclomatic complexity 18 (max 15)",
+      "file_path": "src/engine.py",
+      "line": 45
+    }
+  ]
+}
+```
+
+### Auto-Fix
+
+Fix auto-fixable issues via ruff before scanning:
+
+```bash
+py-doctor . --fix --verbose
 ```
 
 ## Configuration
@@ -145,6 +191,12 @@ If both exist, `py-doctor.toml` takes precedence. CLI flags always override conf
 | `no-broad-except` | Warning | Catches overly broad Exception |
 | `no-assert-in-production` | Warning | Assert statements stripped with -O |
 | `no-return-in-init` | Warning | Return value in `__init__` |
+
+### Complexity
+| Rule | Severity | Description |
+|------|----------|-------------|
+| `high-complexity` | Warning | Cyclomatic complexity > 15 |
+| `critical-complexity` | Error | Cyclomatic complexity > 25 |
 
 ### Django
 | Rule | Severity | Description |

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from python_doctor.rules.architecture import ArchitectureRules
 from python_doctor.rules.base import BaseRules
+from python_doctor.rules.complexity import ComplexityRules
 from python_doctor.rules.correctness import CorrectnessRules
 from python_doctor.rules.django import DjangoRules
 from python_doctor.rules.fastapi import FastAPIRules
@@ -14,7 +15,13 @@ from python_doctor.rules.security import SecurityRules
 
 def get_all_rule_sets() -> list[BaseRules]:
     """Return all available rule sets."""
-    return [SecurityRules(), PerformanceRules(), ArchitectureRules(), CorrectnessRules()]
+    return [
+        SecurityRules(),
+        PerformanceRules(),
+        ArchitectureRules(),
+        CorrectnessRules(),
+        ComplexityRules(),
+    ]
 
 
 def get_framework_rules(framework: str | None) -> list[BaseRules]:

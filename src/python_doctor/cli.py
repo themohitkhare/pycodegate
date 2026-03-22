@@ -37,7 +37,7 @@ from python_doctor.utils.fixer import run_ruff_fix
     default="none",
     help="Exit with code 1 on this severity level.",
 )
-@click.option("--fix", "fix", is_flag=True, default=False, help="Auto-fix issues via ruff before scanning.")
+@click.option("--fix", "fix", is_flag=True, default=False, help="Auto-fix issues via ruff.")
 def main(
     directory: str,
     lint: bool,
