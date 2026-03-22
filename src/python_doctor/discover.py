@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-import tomllib
+from python_doctor._compat import tomllib
 
 from python_doctor.types import ProjectInfo
 from python_doctor.utils.file_discovery import find_python_files
