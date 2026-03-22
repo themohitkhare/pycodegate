@@ -1,6 +1,6 @@
 from pathlib import Path
+
 from python_doctor.discover import discover_project
-from python_doctor.types import ProjectInfo
 
 
 def _write_pyproject(tmp_path: Path, content: str):

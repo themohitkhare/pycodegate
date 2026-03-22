@@ -1,6 +1,5 @@
-from pathlib import Path
 
-from python_doctor.config import load_config, Config
+from python_doctor.config import load_config
 
 
 def test_default_config_when_no_file(tmp_path):

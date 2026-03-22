@@ -1,5 +1,4 @@
 from python_doctor.rules.performance import PerformanceRules
-from python_doctor.types import Severity
 
 
 def _run(source: str) -> list:

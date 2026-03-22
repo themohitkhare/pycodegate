@@ -1,4 +1,3 @@
-from pathlib import Path
 from python_doctor.rules.dead_code import DeadCodeRules
 from python_doctor.types import Category
 

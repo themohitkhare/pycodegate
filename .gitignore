@@ -12,3 +12,6 @@ venv/
 .ruff_cache/
 htmlcov/
 .coverage
+*.so
+.env
+.DS_Store

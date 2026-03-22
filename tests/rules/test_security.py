@@ -1,6 +1,5 @@
-import textwrap
 from python_doctor.rules.security import SecurityRules
-from python_doctor.types import Severity, Category
+from python_doctor.types import Severity
 
 
 def _run(source: str, filename: str = "app.py") -> list:

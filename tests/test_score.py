@@ -1,5 +1,5 @@
 from python_doctor.score import calculate_score
-from python_doctor.types import Diagnostic, Severity, Category
+from python_doctor.types import Category, Diagnostic, Severity
 
 
 def _make_diag(rule: str, severity: Severity = Severity.ERROR) -> Diagnostic:
