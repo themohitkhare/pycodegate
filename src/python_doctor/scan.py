@@ -42,7 +42,10 @@ def scan_project(
     files = _resolve_files(project_path, diff_base)
     all_diags = _run_checks(files, project.framework, project_path, config)
     all_diags = _apply_filters(all_diags, config, project_path, profile.suppressed_rules)
-    score = calculate_score(all_diags, max_deduction_overrides=profile.max_deduction_overrides)
+    max_deduction_overrides = _build_max_deduction_overrides(
+        profile.max_deduction_overrides, config.max_deduction
+    )
+    score = calculate_score(all_diags, max_deduction_overrides=max_deduction_overrides)
     elapsed = int((time.monotonic() - start) * 1000)
 
     return ScanResult(
@@ -50,6 +53,7 @@ def scan_project(
         diagnostics=all_diags,
         project=project,
         elapsed_ms=elapsed,
+        profile=profile.name,
     )
 
 
@@ -100,16 +104,49 @@ def _apply_filters(
     project_path: str = ".",
     suppressed_rules: frozenset[str] | None = None,
 ) -> list[Diagnostic]:
-    """Apply ignore_rules, profile suppressed_rules, and ignore_files filters."""
+    """Apply ignore_rules, profile suppressed_rules, ignore_files, and per_file_suppress filters."""
     combined_ignore = set(config.ignore_rules)
     if suppressed_rules:
         combined_ignore |= suppressed_rules
     if combined_ignore:
         diags = [d for d in diags if d.rule not in combined_ignore]
+    root = Path(project_path).resolve()
     if config.ignore_files:
-        root = Path(project_path).resolve()
         diags = [d for d in diags if not _matches_ignore(d.file_path, config.ignore_files, root)]
+    if config.per_file_suppress:
+        diags = [
+            d for d in diags if not _matches_per_file_suppress(d, config.per_file_suppress, root)
+        ]
     return diags
+
+
+def _matches_per_file_suppress(
+    d: Diagnostic, per_file_suppress: dict[str, list[str]], root: Path
+) -> bool:
+    """Check if a diagnostic is suppressed by per_file_suppress config."""
+    p = Path(d.file_path)
+    try:
+        rel = str(p.resolve().relative_to(root))
+    except ValueError:
+        rel = d.file_path
+    return any(
+        d.rule in rules and (fnmatch.fnmatch(rel, pat) or fnmatch.fnmatch(d.file_path, pat))
+        for pat, rules in per_file_suppress.items()
+    )
+
+
+def _build_max_deduction_overrides(
+    profile_overrides: dict[str, int], config_overrides: dict[str, int]
+) -> dict[str, int] | None:
+    """Merge profile and config max_deduction overrides, config takes precedence.
+
+    Profile overrides use title-case keys (e.g. "Security").
+    Config overrides use lowercase keys (e.g. "security") which are title-cased here.
+    """
+    merged: dict[str, int] = dict(profile_overrides)
+    for key, val in config_overrides.items():
+        merged[key.title()] = val
+    return merged or None
 
 
 def _matches_ignore(file_path: str, patterns: list[str], root: Path) -> bool:

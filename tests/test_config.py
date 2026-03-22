@@ -60,3 +60,41 @@ verbose = false
 """)
     cfg = load_config(str(tmp_path))
     assert cfg.verbose is True
+
+
+def test_per_file_suppress_from_toml(tmp_path):
+    toml_content = """[options]
+lint = true
+
+[per-file-suppress]
+"tests/*" = ["no-bare-except"]
+"""
+    (tmp_path / "py-gate.toml").write_text(toml_content)
+    config = load_config(str(tmp_path))
+    assert config.per_file_suppress == {"tests/*": ["no-bare-except"]}
+
+
+def test_max_deduction_from_toml(tmp_path):
+    toml_content = """[options]
+lint = true
+
+[max-deduction]
+security = 15
+structure = 5
+"""
+    (tmp_path / "py-gate.toml").write_text(toml_content)
+    config = load_config(str(tmp_path))
+    assert config.max_deduction == {"security": 15, "structure": 5}
+
+
+def test_per_file_suppress_from_pyproject(tmp_path):
+    pyproject = """[tool.py-gate.per-file-suppress]
+"tests/*" = ["no-bare-except"]
+
+[tool.py-gate.max-deduction]
+security = 10
+"""
+    (tmp_path / "pyproject.toml").write_text(pyproject)
+    config = load_config(str(tmp_path))
+    assert config.per_file_suppress == {"tests/*": ["no-bare-except"]}
+    assert config.max_deduction == {"security": 10}

@@ -17,6 +17,8 @@ class Config:
     ignore_rules: list[str] = field(default_factory=list)
     ignore_files: list[str] = field(default_factory=list)
     profile: str | None = None
+    per_file_suppress: dict[str, list[str]] = field(default_factory=dict)
+    max_deduction: dict[str, int] = field(default_factory=dict)
 
 
 def load_config(project_path: str) -> Config:
@@ -51,6 +53,8 @@ def _parse_doctor_toml(path: Path) -> Config:
         ignore_rules=ignore.get("rules", []),
         ignore_files=ignore.get("files", []),
         profile=options.get("profile", None),
+        per_file_suppress=data.get("per-file-suppress", {}),
+        max_deduction=data.get("max-deduction", {}),
     )
 
 
@@ -72,4 +76,6 @@ def _parse_pyproject_toml(path: Path) -> Config:
         ignore_rules=ignore.get("rules", []),
         ignore_files=ignore.get("files", []),
         profile=section.get("profile", None),
+        per_file_suppress=section.get("per-file-suppress", {}),
+        max_deduction=section.get("max-deduction", {}),
     )
