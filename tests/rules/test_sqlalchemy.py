@@ -7,6 +7,7 @@ def _run(source: str) -> list:
 
 # -- sqla-sql-injection ------------------------------------------------
 
+
 def test_sql_injection_fstring():
     source = """
 from sqlalchemy import text
@@ -27,6 +28,7 @@ q = text("SELECT * FROM users WHERE id = :id")
 
 # -- sqla-identity-compare ---------------------------------------------
 
+
 def test_identity_compare_is_none():
     source = """
 session.query(User).filter(User.name is None)
@@ -44,6 +46,7 @@ session.query(User).filter(User.name == None)
 
 
 # -- sqla-mutable-default ----------------------------------------------
+
 
 def test_mutable_default_list_literal():
     source = """
@@ -64,6 +67,7 @@ tags = Column(JSON, default=list)
 
 
 # -- sqla-len-all -------------------------------------------------------
+
 
 def test_len_all_flagged():
     source = """

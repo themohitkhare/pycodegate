@@ -25,18 +25,13 @@ class PandasRules(BaseRules):
     # ------------------------------------------------------------------
     # pandas-chained-indexing
     # ------------------------------------------------------------------
-    def _check_chained_indexing(
-        self, tree: ast.Module, filename: str
-    ) -> list[Diagnostic]:
+    def _check_chained_indexing(self, tree: ast.Module, filename: str) -> list[Diagnostic]:
         results: list[Diagnostic] = []
         for node in ast.walk(tree):
             if not isinstance(node, ast.Assign):
                 continue
             for target in node.targets:
-                if (
-                    isinstance(target, ast.Subscript)
-                    and isinstance(target.value, ast.Subscript)
-                ):
+                if isinstance(target, ast.Subscript) and isinstance(target.value, ast.Subscript):
                     results.append(
                         Diagnostic(
                             file_path=filename,
@@ -55,9 +50,7 @@ class PandasRules(BaseRules):
     # ------------------------------------------------------------------
     # pandas-inplace-assignment
     # ------------------------------------------------------------------
-    def _check_inplace_assignment(
-        self, tree: ast.Module, filename: str
-    ) -> list[Diagnostic]:
+    def _check_inplace_assignment(self, tree: ast.Module, filename: str) -> list[Diagnostic]:
         results: list[Diagnostic] = []
         for node in ast.walk(tree):
             if not isinstance(node, ast.Assign):
@@ -90,9 +83,7 @@ class PandasRules(BaseRules):
     # ------------------------------------------------------------------
     # pandas-nan-comparison
     # ------------------------------------------------------------------
-    def _check_nan_comparison(
-        self, tree: ast.Module, filename: str
-    ) -> list[Diagnostic]:
+    def _check_nan_comparison(self, tree: ast.Module, filename: str) -> list[Diagnostic]:
         results: list[Diagnostic] = []
         for node in ast.walk(tree):
             if not isinstance(node, ast.Compare):

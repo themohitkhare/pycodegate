@@ -157,7 +157,9 @@ class CeleryRules(BaseRules):
     # ------------------------------------------------------------------
     # Rule: celery-direct-call
     # ------------------------------------------------------------------
-    def _check_direct_call(self, node: ast.Call, task_names: set[str], filename: str) -> list[Diagnostic]:
+    def _check_direct_call(
+        self, node: ast.Call, task_names: set[str], filename: str
+    ) -> list[Diagnostic]:
         if isinstance(node.func, ast.Name) and node.func.id in task_names:
             return [
                 Diagnostic(

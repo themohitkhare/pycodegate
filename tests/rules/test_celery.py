@@ -7,6 +7,7 @@ def _run(source: str) -> list:
 
 # -- celery-missing-bind --------------------------------------------------
 
+
 def test_missing_bind():
     source = """
 from celery import shared_task
@@ -32,6 +33,7 @@ def add(self, x, y):
 
 
 # -- celery-retry-no-exc --------------------------------------------------
+
 
 def test_retry_no_exc():
     source = """
@@ -61,6 +63,7 @@ def fetch(self, url):
 
 # -- celery-broad-autoretry ------------------------------------------------
 
+
 def test_broad_autoretry():
     source = """
 @app.task(autoretry_for=(Exception,))
@@ -82,6 +85,7 @@ def process(data):
 
 
 # -- celery-direct-call ----------------------------------------------------
+
 
 def test_direct_call():
     source = """

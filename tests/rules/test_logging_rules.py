@@ -8,6 +8,7 @@ def _run(source: str, filename: str = "app.py") -> list:
 
 # --- logging-fstring ---
 
+
 def test_logging_fstring_detected():
     source = "logger.info(f'User {user_id} logged in')"
     diags = _run(source)
@@ -24,6 +25,7 @@ def test_logging_percent_style_ok():
 
 # --- logging-root-logger ---
 
+
 def test_logging_root_logger_detected():
     source = "import logging\nlogging.info('starting up')"
     diags = _run(source)
@@ -38,13 +40,9 @@ def test_logging_named_logger_ok():
 
 # --- logging-error-no-exc-info ---
 
+
 def test_logging_error_no_exc_info_detected():
-    source = (
-        "try:\n"
-        "    do_something()\n"
-        "except Exception as e:\n"
-        "    logger.error('failed')\n"
-    )
+    source = "try:\n    do_something()\nexcept Exception as e:\n    logger.error('failed')\n"
     diags = _run(source)
     assert any(d.rule == "logging-error-no-exc-info" for d in diags)
 

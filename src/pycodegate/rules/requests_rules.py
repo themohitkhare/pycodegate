@@ -147,7 +147,11 @@ class RequestsRules(BaseRules):
 
     def _check_verify_disabled(self, node: ast.Call, filename: str) -> list[Diagnostic]:
         for kw in node.keywords:
-            if kw.arg == "verify" and isinstance(kw.value, ast.Constant) and kw.value.value is False:
+            if (
+                kw.arg == "verify"
+                and isinstance(kw.value, ast.Constant)
+                and kw.value.value is False
+            ):
                 return [
                     Diagnostic(
                         file_path=filename,

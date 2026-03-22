@@ -53,9 +53,7 @@ class NumpyRules(BaseRules):
                     return True
         return False
 
-    def _check_array_equality(
-        self, node: ast.If | ast.While, filename: str
-    ) -> list[Diagnostic]:
+    def _check_array_equality(self, node: ast.If | ast.While, filename: str) -> list[Diagnostic]:
         test = node.test
         flagged: list[ast.AST] = []
 
@@ -160,7 +158,11 @@ class NumpyRules(BaseRules):
 
     @staticmethod
     def _is_int_literal(elt: ast.expr) -> bool:
-        return isinstance(elt, ast.Constant) and isinstance(elt.value, int) and not isinstance(elt.value, bool)
+        return (
+            isinstance(elt, ast.Constant)
+            and isinstance(elt.value, int)
+            and not isinstance(elt.value, bool)
+        )
 
     @staticmethod
     def _is_none_or_nan(elt: ast.expr) -> bool:

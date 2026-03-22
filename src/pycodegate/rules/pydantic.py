@@ -10,9 +10,7 @@ from pycodegate.types import Category, Diagnostic, Severity
 
 def _is_basemodel_subclass(node: ast.ClassDef) -> bool:
     """Check if any base in node.bases is a Name with id 'BaseModel'."""
-    return any(
-        isinstance(base, ast.Name) and base.id == "BaseModel" for base in node.bases
-    )
+    return any(isinstance(base, ast.Name) and base.id == "BaseModel" for base in node.bases)
 
 
 class PydanticRules(BaseRules):
@@ -112,9 +110,17 @@ class PydanticRules(BaseRules):
     @staticmethod
     def _has_validator_decorator(node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
         for dec in node.decorator_list:
-            if isinstance(dec, ast.Name) and dec.id in ("field_validator", "model_validator", "validator"):
+            if isinstance(dec, ast.Name) and dec.id in (
+                "field_validator",
+                "model_validator",
+                "validator",
+            ):
                 return True
-            if isinstance(dec, ast.Call) and isinstance(dec.func, ast.Name) and dec.func.id in ("field_validator", "model_validator", "validator"):
+            if (
+                isinstance(dec, ast.Call)
+                and isinstance(dec.func, ast.Name)
+                and dec.func.id in ("field_validator", "model_validator", "validator")
+            ):
                 return True
         return False
 
@@ -277,7 +283,11 @@ class PydanticRules(BaseRules):
         for dec in node.decorator_list:
             if isinstance(dec, ast.Name) and dec.id == "field_validator":
                 return True
-            if isinstance(dec, ast.Call) and isinstance(dec.func, ast.Name) and dec.func.id == "field_validator":
+            if (
+                isinstance(dec, ast.Call)
+                and isinstance(dec.func, ast.Name)
+                and dec.func.id == "field_validator"
+            ):
                 return True
         return False
 

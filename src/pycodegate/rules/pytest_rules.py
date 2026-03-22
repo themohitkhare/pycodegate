@@ -50,9 +50,7 @@ class PytestRules(BaseRules):
     # Rule 2: pytest-raises-instead-of-try
     # ------------------------------------------------------------------
 
-    def _check_raises_instead_of_try(
-        self, tree: ast.Module, filename: str
-    ) -> list[Diagnostic]:
+    def _check_raises_instead_of_try(self, tree: ast.Module, filename: str) -> list[Diagnostic]:
         """Detect try/except anti-patterns in test functions."""
         diags: list[Diagnostic] = []
         for node in ast.walk(tree):
@@ -147,6 +145,10 @@ class PytestRules(BaseRules):
         if not isinstance(node, ast.Compare):
             return False
         for op, comparator in zip(node.ops, node.comparators):  # noqa: B905
-            if isinstance(op, ast.Eq) and isinstance(comparator, ast.Constant) and isinstance(comparator.value, float):
+            if (
+                isinstance(op, ast.Eq)
+                and isinstance(comparator, ast.Constant)
+                and isinstance(comparator.value, float)
+            ):
                 return True
         return False
