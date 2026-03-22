@@ -1,4 +1,3 @@
-
 from python_doctor.config import load_config
 
 

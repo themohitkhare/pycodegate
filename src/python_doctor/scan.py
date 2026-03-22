@@ -59,12 +59,10 @@ def _run_checks(
 ) -> list[Diagnostic]:
     """Run lint + dead code in parallel."""
     with ThreadPoolExecutor(max_workers=2) as executor:
-        lint_future = executor.submit(
-            _run_lint, files, framework, config
-        ) if config.lint else None
-        dead_code_future = executor.submit(
-            _run_dead_code, project_path, config
-        ) if config.dead_code else None
+        lint_future = executor.submit(_run_lint, files, framework, config) if config.lint else None
+        dead_code_future = (
+            executor.submit(_run_dead_code, project_path, config) if config.dead_code else None
+        )
 
         lint_diags = lint_future.result() if lint_future else []
         dead_code_diags = dead_code_future.result() if dead_code_future else []
@@ -73,7 +71,9 @@ def _run_checks(
 
 
 def _apply_filters(
-    diags: list[Diagnostic], config: Config, project_path: str = ".",
+    diags: list[Diagnostic],
+    config: Config,
+    project_path: str = ".",
 ) -> list[Diagnostic]:
     """Apply ignore_rules and ignore_files filters."""
     if config.ignore_rules:

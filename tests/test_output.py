@@ -27,15 +27,23 @@ def test_format_summary():
         score=Score(value=85, label="Great"),
         diagnostics=[
             Diagnostic(
-                file_path="app.py", rule="no-eval", severity=Severity.ERROR,
-                category=Category.SECURITY, message="Avoid eval()",
-                help="Use ast.literal_eval()", line=1,
+                file_path="app.py",
+                rule="no-eval",
+                severity=Severity.ERROR,
+                category=Category.SECURITY,
+                message="Avoid eval()",
+                help="Use ast.literal_eval()",
+                line=1,
             )
         ],
         project=ProjectInfo(
-            path="/tmp/proj", python_version="3.12", framework="fastapi",
-            package_manager="uv", test_framework="pytest",
-            has_type_hints=True, source_file_count=42,
+            path="/tmp/proj",
+            python_version="3.12",
+            framework="fastapi",
+            package_manager="uv",
+            test_framework="pytest",
+            has_type_hints=True,
+            source_file_count=42,
         ),
         elapsed_ms=1234,
     )

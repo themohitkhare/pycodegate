@@ -23,12 +23,17 @@ from python_doctor.types import Severity
 @click.option("--verbose", is_flag=True, help="Show file details per rule.")
 @click.option("--score", "score_only", is_flag=True, help="Output only the numeric score.")
 @click.option(
-    "--diff", "diff_base", default=None, type=str,
+    "--diff",
+    "diff_base",
+    default=None,
+    type=str,
     help="Scan only files changed vs base branch.",
 )
 @click.option(
-    "--fail-on", type=click.Choice(["error", "warning", "none"]),
-    default="none", help="Exit with code 1 on this severity level.",
+    "--fail-on",
+    type=click.Choice(["error", "warning", "none"]),
+    default="none",
+    help="Exit with code 1 on this severity level.",
 )
 def main(
     directory: str,

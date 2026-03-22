@@ -122,9 +122,7 @@ def print_scan_result(result: ScanResult, verbose: bool = False) -> None:
     console.print()
 
 
-def _print_diagnostics(
-    console: Console, diagnostics: list[Diagnostic], verbose: bool
-) -> None:
+def _print_diagnostics(console: Console, diagnostics: list[Diagnostic], verbose: bool) -> None:
     """Print diagnostics grouped by rule, sorted by severity."""
     groups: dict[str, list[Diagnostic]] = {}
     for d in diagnostics:

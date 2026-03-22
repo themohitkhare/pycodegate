@@ -12,10 +12,13 @@ def _write_requirements(tmp_path: Path, content: str):
 
 
 def test_detect_django_from_pyproject(tmp_path):
-    _write_pyproject(tmp_path, """
+    _write_pyproject(
+        tmp_path,
+        """
 [project]
 dependencies = ["django>=4.2"]
-""")
+""",
+    )
     (tmp_path / "app.py").write_text("x = 1")
     info = discover_project(str(tmp_path))
     assert info.framework == "django"
@@ -29,10 +32,13 @@ def test_detect_fastapi_from_requirements(tmp_path):
 
 
 def test_detect_flask_from_pyproject(tmp_path):
-    _write_pyproject(tmp_path, """
+    _write_pyproject(
+        tmp_path,
+        """
 [project]
 dependencies = ["flask>=3.0"]
-""")
+""",
+    )
     (tmp_path / "app.py").write_text("x = 1")
     info = discover_project(str(tmp_path))
     assert info.framework == "flask"
@@ -61,13 +67,16 @@ def test_detect_poetry_package_manager(tmp_path):
 
 
 def test_detect_pytest(tmp_path):
-    _write_pyproject(tmp_path, """
+    _write_pyproject(
+        tmp_path,
+        """
 [project]
 dependencies = []
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
-""")
+""",
+    )
     (tmp_path / "app.py").write_text("x = 1")
     info = discover_project(str(tmp_path))
     assert info.test_framework == "pytest"

@@ -5,6 +5,7 @@ from python_doctor.api import diagnose  # noqa: F401
 
 # Dataclass fields accessed dynamically or in templates
 from python_doctor.types import ProjectInfo, Score  # noqa: F401
+
 ProjectInfo.has_type_hints  # type: ignore[truthy-function]
 ProjectInfo.source_file_count  # type: ignore[truthy-function]
 Score.label  # type: ignore[truthy-function]

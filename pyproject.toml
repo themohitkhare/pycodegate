@@ -57,9 +57,17 @@ pythonpath = ["src"]
 [tool.ruff]
 line-length = 100
 target-version = "py310"
+exclude = ["tests/fixtures/**", "whitelist.py"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "B", "SIM", "TCH"]
+ignore = ["SIM102"]  # nested ifs in AST walking are clearer than combined conditions
+
+[tool.ruff.lint.per-file-ignores]
+"src/python_doctor/rules/*.py" = ["E501"]  # rule messages are naturally long
+"src/python_doctor/rules/__init__.py" = ["TC001"]  # runtime imports needed
+"src/python_doctor/rules/base.py" = ["TC001"]  # runtime import in abstract method
+"src/python_doctor/utils/*.py" = ["E501"]
 
 [tool.python-doctor]
 [tool.python-doctor.ignore]

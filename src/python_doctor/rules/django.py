@@ -30,13 +30,18 @@ class DjangoRules(BaseRules):
                 if node.func.attr == "execute" and node.args:
                     arg = node.args[0]
                     if isinstance(arg, ast.BinOp) and isinstance(arg.op, ast.Add):
-                        diags.append(Diagnostic(
-                            file_path=filename, rule="no-raw-sql-injection", severity=Severity.ERROR,
-                            category=Category.DJANGO,
-                            message="SQL query built with string concatenation — SQL injection risk",
-                            help="Use parameterized queries: cursor.execute('SELECT ... WHERE id = %s', [user_id])",
-                            line=node.lineno, column=node.col_offset,
-                        ))
+                        diags.append(
+                            Diagnostic(
+                                file_path=filename,
+                                rule="no-raw-sql-injection",
+                                severity=Severity.ERROR,
+                                category=Category.DJANGO,
+                                message="SQL query built with string concatenation — SQL injection risk",
+                                help="Use parameterized queries: cursor.execute('SELECT ... WHERE id = %s', [user_id])",
+                                line=node.lineno,
+                                column=node.col_offset,
+                            )
+                        )
         return diags
 
     def _check_debug_true(self, tree: ast.Module, filename: str) -> list[Diagnostic]:
@@ -46,15 +51,24 @@ class DjangoRules(BaseRules):
         for node in ast.walk(tree):
             if isinstance(node, ast.Assign):
                 for target in node.targets:
-                    if (isinstance(target, ast.Name) and target.id == "DEBUG"
-                            and isinstance(node.value, ast.Constant) and node.value.value is True):
-                        diags.append(Diagnostic(
-                            file_path=filename, rule="no-debug-true", severity=Severity.ERROR,
-                            category=Category.DJANGO,
-                            message="DEBUG = True should not be hardcoded in settings",
-                            help="Use environment variable: DEBUG = os.environ.get('DEBUG', 'False') == 'True'",
-                            line=node.lineno, column=node.col_offset,
-                        ))
+                    if (
+                        isinstance(target, ast.Name)
+                        and target.id == "DEBUG"
+                        and isinstance(node.value, ast.Constant)
+                        and node.value.value is True
+                    ):
+                        diags.append(
+                            Diagnostic(
+                                file_path=filename,
+                                rule="no-debug-true",
+                                severity=Severity.ERROR,
+                                category=Category.DJANGO,
+                                message="DEBUG = True should not be hardcoded in settings",
+                                help="Use environment variable: DEBUG = os.environ.get('DEBUG', 'False') == 'True'",
+                                line=node.lineno,
+                                column=node.col_offset,
+                            )
+                        )
         return diags
 
     def _check_n_plus_one(self, tree: ast.Module, source: str, filename: str) -> list[Diagnostic]:
@@ -66,22 +80,29 @@ class DjangoRules(BaseRules):
                 continue
             var_name = node.target.id
             if self._has_related_access(node, var_name):
-                diags.append(Diagnostic(
-                    file_path=filename, rule="no-n-plus-one-query", severity=Severity.WARNING,
-                    category=Category.DJANGO,
-                    message="Potential N+1 query — accessing related object in a loop",
-                    help="Use select_related() or prefetch_related() on the queryset",
-                    line=node.lineno, column=node.col_offset,
-                ))
+                diags.append(
+                    Diagnostic(
+                        file_path=filename,
+                        rule="no-n-plus-one-query",
+                        severity=Severity.WARNING,
+                        category=Category.DJANGO,
+                        message="Potential N+1 query — accessing related object in a loop",
+                        help="Use select_related() or prefetch_related() on the queryset",
+                        line=node.lineno,
+                        column=node.col_offset,
+                    )
+                )
         return diags
 
     @staticmethod
     def _has_related_access(loop_node: ast.For, var_name: str) -> bool:
         for child in ast.walk(loop_node):
-            if (isinstance(child, ast.Attribute)
-                    and isinstance(child.value, ast.Attribute)
-                    and isinstance(child.value.value, ast.Name)
-                    and child.value.value.id == var_name):
+            if (
+                isinstance(child, ast.Attribute)
+                and isinstance(child.value, ast.Attribute)
+                and isinstance(child.value.value, ast.Name)
+                and child.value.value.id == var_name
+            ):
                 return True
         return False
 
@@ -98,13 +119,22 @@ class DjangoRules(BaseRules):
         for node in ast.walk(tree):
             if isinstance(node, ast.Assign):
                 for target in node.targets:
-                    if (isinstance(target, ast.Name) and target.id == "SECRET_KEY"
-                            and isinstance(node.value, ast.Constant) and isinstance(node.value.value, str)):
-                        diags.append(Diagnostic(
-                            file_path=filename, rule="no-secret-key-in-source", severity=Severity.ERROR,
-                            category=Category.DJANGO,
-                            message="SECRET_KEY hardcoded in settings — use environment variable",
-                            help="Use os.environ['SECRET_KEY'] or django-environ",
-                            line=node.lineno, column=node.col_offset,
-                        ))
+                    if (
+                        isinstance(target, ast.Name)
+                        and target.id == "SECRET_KEY"
+                        and isinstance(node.value, ast.Constant)
+                        and isinstance(node.value.value, str)
+                    ):
+                        diags.append(
+                            Diagnostic(
+                                file_path=filename,
+                                rule="no-secret-key-in-source",
+                                severity=Severity.ERROR,
+                                category=Category.DJANGO,
+                                message="SECRET_KEY hardcoded in settings — use environment variable",
+                                help="Use os.environ['SECRET_KEY'] or django-environ",
+                                line=node.lineno,
+                                column=node.col_offset,
+                            )
+                        )
         return diags

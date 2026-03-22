@@ -36,23 +36,33 @@ class FastAPIRules(BaseRules):
 
     def _check_sync_endpoint(self, node, decorator, filename):
         if isinstance(node, ast.FunctionDef):
-            return [Diagnostic(
-                file_path=filename, rule="prefer-async-endpoint", severity=Severity.WARNING,
-                category=Category.FASTAPI,
-                message=f"Endpoint '{node.name}' is synchronous — blocks the event loop",
-                help="Use 'async def' for I/O-bound endpoints",
-                line=node.lineno, column=node.col_offset,
-            )]
+            return [
+                Diagnostic(
+                    file_path=filename,
+                    rule="prefer-async-endpoint",
+                    severity=Severity.WARNING,
+                    category=Category.FASTAPI,
+                    message=f"Endpoint '{node.name}' is synchronous — blocks the event loop",
+                    help="Use 'async def' for I/O-bound endpoints",
+                    line=node.lineno,
+                    column=node.col_offset,
+                )
+            ]
         return []
 
     def _check_response_model(self, node, decorator, filename):
         has_response_model = any(kw.arg == "response_model" for kw in decorator.keywords)
         if not has_response_model:
-            return [Diagnostic(
-                file_path=filename, rule="missing-response-model", severity=Severity.WARNING,
-                category=Category.FASTAPI,
-                message=f"Endpoint '{node.name}' missing response_model — no response validation",
-                help="Add response_model parameter to the route decorator",
-                line=node.lineno, column=node.col_offset,
-            )]
+            return [
+                Diagnostic(
+                    file_path=filename,
+                    rule="missing-response-model",
+                    severity=Severity.WARNING,
+                    category=Category.FASTAPI,
+                    message=f"Endpoint '{node.name}' missing response_model — no response validation",
+                    help="Add response_model parameter to the route decorator",
+                    line=node.lineno,
+                    column=node.col_offset,
+                )
+            ]
         return []
