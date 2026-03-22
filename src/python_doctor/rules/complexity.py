@@ -64,6 +64,7 @@ class ComplexityRules(BaseRules):
                             help="Break into smaller functions or simplify conditional logic",
                             line=node.lineno,
                             column=node.col_offset,
+                            cost=3.0,
                         )
                     )
                 elif complexity > MAX_COMPLEXITY:
@@ -80,6 +81,7 @@ class ComplexityRules(BaseRules):
                             help="Break into smaller functions or simplify conditional logic",
                             line=node.lineno,
                             column=node.col_offset,
+                            cost=1.5,
                         )
                     )
         return diags

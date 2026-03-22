@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 
 
@@ -21,6 +21,9 @@ class Category(str, Enum):
     DJANGO = "Django"
     FASTAPI = "FastAPI"
     FLASK = "Flask"
+    STRUCTURE = "Structure"
+    IMPORTS = "Imports"
+    DEPENDENCIES = "Dependencies"
 
 
 @dataclass(frozen=True)
@@ -33,6 +36,7 @@ class Diagnostic:
     help: str
     line: int
     column: int = 0
+    cost: float = field(default=1.0)
 
 
 @dataclass(frozen=True)

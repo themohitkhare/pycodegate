@@ -45,6 +45,7 @@ class PerformanceRules(BaseRules):
                                 help="Collect items in a list and use ''.join() at the end",
                                 line=child.lineno,
                                 column=child.col_offset,
+                                cost=0.5,
                             )
                         )
         return diags
@@ -78,6 +79,7 @@ class PerformanceRules(BaseRules):
                                 help="Move imports to the top of the module",
                                 line=child.lineno,
                                 column=child.col_offset,
+                                cost=0.5,
                             )
                         )
         return diags
@@ -96,6 +98,7 @@ class PerformanceRules(BaseRules):
                         help="Import specific names instead",
                         line=node.lineno,
                         column=node.col_offset,
+                        cost=0.5,
                     )
                 )
         return diags

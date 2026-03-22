@@ -46,6 +46,7 @@ class FastAPIRules(BaseRules):
                     help="Use 'async def' for I/O-bound endpoints",
                     line=node.lineno,
                     column=node.col_offset,
+                    cost=1.0,
                 )
             ]
         return []
@@ -63,6 +64,7 @@ class FastAPIRules(BaseRules):
                     help="Add response_model parameter to the route decorator",
                     line=node.lineno,
                     column=node.col_offset,
+                    cost=1.0,
                 )
             ]
         return []

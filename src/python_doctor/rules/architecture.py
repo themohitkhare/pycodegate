@@ -40,6 +40,7 @@ class ArchitectureRules(BaseRules):
                     message=f"Module has {lines} lines (max {MAX_MODULE_LINES}) — consider splitting",
                     help="Extract related functions into separate modules",
                     line=1,
+                    cost=1.0,
                 )
             ]
         return []
@@ -66,6 +67,7 @@ class ArchitectureRules(BaseRules):
                         help="Extract nested logic into helper functions or use early returns",
                         line=node.lineno,
                         column=node.col_offset,
+                        cost=1.0,
                     )
                 )
         for child in ast.iter_child_nodes(node):
@@ -89,6 +91,7 @@ class ArchitectureRules(BaseRules):
                                 help="Break into smaller functions with single responsibilities",
                                 line=node.lineno,
                                 column=node.col_offset,
+                                cost=1.0,
                             )
                         )
         return diags
@@ -112,6 +115,7 @@ class ArchitectureRules(BaseRules):
                             help="Group related arguments into a dataclass or TypedDict",
                             line=node.lineno,
                             column=node.col_offset,
+                            cost=1.0,
                         )
                     )
         return diags

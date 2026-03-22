@@ -50,6 +50,7 @@ class SecurityRules(BaseRules):
                             help="Use ast.literal_eval() for safe parsing of literals",
                             line=node.lineno,
                             column=node.col_offset,
+                            cost=3.0,
                         )
                     )
                 elif node.func.id == "exec":
@@ -63,6 +64,7 @@ class SecurityRules(BaseRules):
                             help="Refactor to avoid dynamic code execution",
                             line=node.lineno,
                             column=node.col_offset,
+                            cost=3.0,
                         )
                     )
         return diags
@@ -83,6 +85,7 @@ class SecurityRules(BaseRules):
                                 help="Use JSON or a safe serialization format for untrusted data",
                                 line=node.lineno,
                                 column=node.col_offset,
+                                cost=3.0,
                             )
                         )
         return diags
@@ -108,6 +111,7 @@ class SecurityRules(BaseRules):
                                 help="Use yaml.safe_load() or pass Loader=yaml.SafeLoader",
                                 line=node.lineno,
                                 column=node.col_offset,
+                                cost=3.0,
                             )
                         )
         return diags
@@ -133,6 +137,7 @@ class SecurityRules(BaseRules):
                             help="Use os.environ or a .env file via python-dotenv",
                             line=node.lineno,
                             column=node.col_offset,
+                            cost=3.0,
                         )
                     )
         return diags
@@ -156,6 +161,7 @@ class SecurityRules(BaseRules):
                             help="Use hashlib.sha256() or hashlib.sha3_256() instead",
                             line=node.lineno,
                             column=node.col_offset,
+                            cost=1.0,
                         )
                     )
         return diags

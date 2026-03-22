@@ -40,6 +40,7 @@ class DjangoRules(BaseRules):
                                 help="Use parameterized queries: cursor.execute('SELECT ... WHERE id = %s', [user_id])",
                                 line=node.lineno,
                                 column=node.col_offset,
+                                cost=3.0,
                             )
                         )
         return diags
@@ -67,6 +68,7 @@ class DjangoRules(BaseRules):
                                 help="Use environment variable: DEBUG = os.environ.get('DEBUG', 'False') == 'True'",
                                 line=node.lineno,
                                 column=node.col_offset,
+                                cost=3.0,
                             )
                         )
         return diags
@@ -90,6 +92,7 @@ class DjangoRules(BaseRules):
                         help="Use select_related() or prefetch_related() on the queryset",
                         line=node.lineno,
                         column=node.col_offset,
+                        cost=1.0,
                     )
                 )
         return diags
@@ -135,6 +138,7 @@ class DjangoRules(BaseRules):
                                 help="Use os.environ['SECRET_KEY'] or django-environ",
                                 line=node.lineno,
                                 column=node.col_offset,
+                                cost=3.0,
                             )
                         )
         return diags

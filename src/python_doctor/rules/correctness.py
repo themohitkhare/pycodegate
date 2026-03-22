@@ -40,6 +40,7 @@ class CorrectnessRules(BaseRules):
                                 help="Use None as default and create the mutable inside the function body",
                                 line=node.lineno,
                                 column=node.col_offset,
+                                cost=2.0,
                             )
                         )
         return diags
@@ -58,6 +59,7 @@ class CorrectnessRules(BaseRules):
                         help="Catch a specific exception type, or at minimum use 'except Exception'",
                         line=node.lineno,
                         column=node.col_offset,
+                        cost=2.0,
                     )
                 )
         return diags
@@ -80,6 +82,7 @@ class CorrectnessRules(BaseRules):
                             help="Catch specific exception types (ValueError, TypeError, etc.)",
                             line=node.lineno,
                             column=node.col_offset,
+                            cost=1.0,
                         )
                     )
         return diags
@@ -101,6 +104,7 @@ class CorrectnessRules(BaseRules):
                         help="Use explicit if/raise for production validation",
                         line=node.lineno,
                         column=node.col_offset,
+                        cost=1.0,
                     )
                 )
         return diags
@@ -121,6 +125,7 @@ class CorrectnessRules(BaseRules):
                                 help="Remove the return value — __init__ must return None",
                                 line=child.lineno,
                                 column=child.col_offset,
+                                cost=2.0,
                             )
                         )
         return diags

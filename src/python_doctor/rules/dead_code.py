@@ -52,6 +52,7 @@ class DeadCodeRules:
                     message=f"Unused {item.typ}: '{item.name}' ({item.confidence}% confidence)",
                     help="Remove this dead code or add it to a vulture whitelist",
                     line=item.first_lineno,
+                    cost=0.5,
                 )
             )
         return diags

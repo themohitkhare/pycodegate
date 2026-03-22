@@ -49,6 +49,7 @@ class FlaskRules(BaseRules):
                                 help="Use os.environ['SECRET_KEY'] or a config file",
                                 line=node.lineno,
                                 column=node.col_offset,
+                                cost=3.0,
                             )
                         )
         return diags
@@ -71,6 +72,7 @@ class FlaskRules(BaseRules):
                         help="Use environment variable: app.run(debug=os.environ.get('FLASK_DEBUG'))",
                         line=node.lineno,
                         column=node.col_offset,
+                        cost=3.0,
                     )
                 )
         return diags
@@ -98,6 +100,7 @@ class FlaskRules(BaseRules):
                         help="Use parameterized queries with placeholders",
                         line=node.lineno,
                         column=node.col_offset,
+                        cost=3.0,
                     )
                 )
         return diags
