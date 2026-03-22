@@ -1,6 +1,6 @@
 <h1 align="center">PyCodeGate</h1>
 <p align="center">
-  <strong>One command. One score. Your Python quality gate.</strong>
+  <strong>Trust, but verify. The quality gate for AI-generated Python code.</strong>
 </p>
 <p align="center">
   <a href="https://github.com/themohitkhare/pycodegate/actions/workflows/ci.yml"><img src="https://github.com/themohitkhare/pycodegate/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
@@ -11,9 +11,13 @@
 
 ---
 
+## Why PyCodeGate?
+
+AI coding agents ship code fast — but fast doesn't mean safe. Every `eval()` an LLM drops in, every mutable default it forgets, every circular import it creates is a landmine waiting to go off. PyCodeGate is the trust layer between AI-generated code and your production codebase: one command, one score, zero ambiguity.
+
 ## How it works
 
-PyCodeGate starts by detecting your project's context: framework (Django, FastAPI, Flask), Python version, package manager (uv, poetry, pip), and test framework. That context drives which rules are active — Django projects get SQL injection checks, FastAPI projects get async-correctness checks, and so on.
+PyCodeGate detects your project's context: framework (Django, FastAPI, Flask), Python version, package manager (uv, poetry, pip), and test framework. That context drives which rules are active — Django projects get SQL injection checks, FastAPI projects get async-correctness checks, and so on.
 
 It then runs two analysis passes **in parallel**: a lint pass that evaluates 40+ rules across 8 categories (Security, Correctness, Complexity, Architecture, Performance, Structure, Imports, Dead Code), and a dead-code pass powered by [Vulture](https://github.com/jendrikseipp/vulture) that finds unused functions, classes, imports, and variables.
 

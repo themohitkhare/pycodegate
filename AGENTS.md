@@ -2,7 +2,7 @@
 
 ## Overview
 
-pycodegate is a Python code quality gate that produces a 0–100 health score. It detects your framework, runs parallel lint and dead-code analysis across 40+ rules, and reports findings by severity so you always know what to fix first.
+PyCodeGate is the quality gate for AI-generated Python code. It produces a 0–100 health score by detecting your framework, running parallel lint and dead-code analysis across 40+ rules, and reporting findings by severity — so you can trust what your AI agent just wrote.
 
 ## Quick Start
 
