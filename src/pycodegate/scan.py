@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import fnmatch
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -11,13 +12,14 @@ from typing import TYPE_CHECKING
 from pycodegate.constants import RULES_SUPPRESSED_IN_TESTS
 from pycodegate.discover import discover_project
 from pycodegate.profile import PROFILES, detect_profile
-from pycodegate.rules import get_all_rule_sets, get_framework_rules
+from pycodegate.rules import get_all_rule_sets, get_import_gated_rules
 from pycodegate.rules.dead_code import DeadCodeRules
 from pycodegate.rules.dependencies import DependencyRules
 from pycodegate.rules.imports import ImportsRules
 from pycodegate.rules.structure import StructureRules
-from pycodegate.score import calculate_score
+from pycodegate.score import calculate_score, category_breakdown
 from pycodegate.types import Diagnostic, ScanResult
+from pycodegate.utils.ast_helpers import imported_modules
 from pycodegate.utils.diff import get_changed_files
 from pycodegate.utils.file_discovery import find_python_files
 from pycodegate.utils.is_test_file import is_test_file
@@ -42,13 +44,14 @@ def scan_project(
         profile = detect_profile(project_path)
 
     files = _resolve_files(project_path, diff_base)
-    all_diags = _run_checks(files, project.frameworks, project_path, config)
+    all_diags = _run_checks(files, project_path, config)
     all_diags = _suppress_test_noise(all_diags, project_path)
     all_diags = _apply_filters(all_diags, config, project_path, profile.suppressed_rules)
     max_deduction_overrides = _build_max_deduction_overrides(
         profile.max_deduction_overrides, config.max_deduction
     )
     score = calculate_score(all_diags, max_deduction_overrides=max_deduction_overrides)
+    category_scores = category_breakdown(all_diags, max_deduction_overrides=max_deduction_overrides)
     elapsed = int((time.monotonic() - start) * 1000)
 
     return ScanResult(
@@ -57,6 +60,7 @@ def scan_project(
         project=project,
         elapsed_ms=elapsed,
         profile=profile.name,
+        category_scores=category_scores,
     )
 
 
@@ -71,14 +75,13 @@ def _resolve_files(project_path: str, diff_base: str | None) -> list[Path]:
 
 def _run_checks(
     files: list[Path],
-    frameworks: list[str],
     project_path: str,
     config: Config,
 ) -> list[Diagnostic]:
     """Run lint + dead code + imports + structure + dependency checks in parallel."""
     str_files = [str(f) for f in files]
     with ThreadPoolExecutor(max_workers=5) as executor:
-        lint_future = executor.submit(_run_lint, files, frameworks, config) if config.lint else None
+        lint_future = executor.submit(_run_lint, files, config) if config.lint else None
         dead_code_future = (
             executor.submit(_run_dead_code, project_path, config) if config.dead_code else None
         )
@@ -186,11 +189,11 @@ def _matches_ignore(file_path: str, patterns: list[str], root: Path) -> bool:
 
 def _run_lint(
     files: list[Path],
-    frameworks: list[str],
     config: Config,
 ) -> list[Diagnostic]:
-    """Run all rule sets against all files."""
-    rule_sets = get_all_rule_sets() + get_framework_rules(frameworks)
+    """Run core rules on every file; library rules only on files importing the library."""
+    core_rules = get_all_rule_sets()
+    gated_rules = get_import_gated_rules()
     diags: list[Diagnostic] = []
 
     for file_path in files:
@@ -199,8 +202,17 @@ def _run_lint(
         except (OSError, UnicodeDecodeError):
             continue
 
-        for rules in rule_sets:
-            diags.extend(rules.check(source, str(file_path)))
+        filename = str(file_path)
+        for rules in core_rules:
+            diags.extend(rules.check(source, filename))
+
+        try:
+            file_imports = imported_modules(ast.parse(source))
+        except (SyntaxError, ValueError):
+            continue
+        for rules, trigger in gated_rules:
+            if trigger in file_imports:
+                diags.extend(rules.check(source, filename))
 
     return diags
 

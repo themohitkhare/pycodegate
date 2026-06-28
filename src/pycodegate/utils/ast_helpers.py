@@ -17,3 +17,18 @@ def parse_file(file_path: Path) -> tuple[str, ast.Module | None]:
         return source, tree
     except (SyntaxError, UnicodeDecodeError):
         return "", None
+
+
+def imported_modules(tree: ast.Module) -> set[str]:
+    """Return the set of top-level module roots imported anywhere in *tree*.
+
+    ``import pandas as pd`` and ``from pandas import X`` both yield ``"pandas"``.
+    """
+    roots: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                roots.add(alias.name.split(".")[0])
+        elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
+            roots.add(node.module.split(".")[0])
+    return roots

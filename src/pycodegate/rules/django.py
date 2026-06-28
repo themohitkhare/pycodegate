@@ -3,9 +3,25 @@
 from __future__ import annotations
 
 import ast
+import re
 
 from pycodegate.rules.base import BaseRules
 from pycodegate.types import Category, Diagnostic, Severity
+
+_SQL_PATTERN = re.compile(
+    r"(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER)\s",
+    re.IGNORECASE,
+)
+
+
+def _binop_has_sql_literal(node: ast.AST) -> bool:
+    """True if any string literal inside a BinOp tree looks like SQL."""
+    return any(
+        isinstance(child, ast.Constant)
+        and isinstance(child.value, str)
+        and _SQL_PATTERN.search(child.value)
+        for child in ast.walk(node)
+    )
 
 
 class DjangoRules(BaseRules):
@@ -29,7 +45,11 @@ class DjangoRules(BaseRules):
             if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
                 if node.func.attr == "execute" and node.args:
                     arg = node.args[0]
-                    if isinstance(arg, ast.BinOp) and isinstance(arg.op, ast.Add):
+                    if (
+                        isinstance(arg, ast.BinOp)
+                        and isinstance(arg.op, ast.Add)
+                        and _binop_has_sql_literal(arg)
+                    ):
                         diags.append(
                             Diagnostic(
                                 file_path=filename,
@@ -78,6 +98,8 @@ class DjangoRules(BaseRules):
         for node in ast.walk(tree):
             if not isinstance(node, ast.For) or not self._is_queryset_iter(node.iter):
                 continue
+            if self._uses_eager_loading(node.iter):
+                continue  # select_related/prefetch_related already prevents the N+1
             if not isinstance(node.target, ast.Name):
                 continue
             var_name = node.target.id
@@ -96,6 +118,16 @@ class DjangoRules(BaseRules):
                     )
                 )
         return diags
+
+    @staticmethod
+    def _uses_eager_loading(node: ast.expr) -> bool:
+        """True if any call in the queryset chain is select_related/prefetch_related."""
+        current = node
+        while isinstance(current, ast.Call) and isinstance(current.func, ast.Attribute):
+            if current.func.attr in ("select_related", "prefetch_related"):
+                return True
+            current = current.func.value
+        return False
 
     @staticmethod
     def _has_related_access(loop_node: ast.For, var_name: str) -> bool:

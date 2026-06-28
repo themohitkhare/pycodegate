@@ -142,8 +142,9 @@ class TestDetectScriptProfile:
 class TestProfileAttributes:
     def test_cli_profile_suppressed_rules(self) -> None:
         cli = PROFILES["cli"]
-        assert "no-subprocess" in cli.suppressed_rules
-        assert "no-shell-exec" in cli.suppressed_rules
+        # These must be the IDs the rules actually emit, or suppression does nothing.
+        assert "no-os-system" in cli.suppressed_rules
+        assert "no-subprocess-shell" in cli.suppressed_rules
 
     def test_script_profile_max_deduction(self) -> None:
         script = PROFILES["script"]

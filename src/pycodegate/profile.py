@@ -20,7 +20,7 @@ PROFILES = {
     "web": Profile(name="web"),
     "cli": Profile(
         name="cli",
-        suppressed_rules=frozenset({"no-subprocess", "no-shell-exec"}),
+        suppressed_rules=frozenset({"no-os-system", "no-subprocess-shell"}),
         max_deduction_overrides={"Security": 15},
     ),
     "library": Profile(name="library"),

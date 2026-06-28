@@ -11,7 +11,9 @@ Scans your Python codebase for security, performance, correctness, architecture,
 ## Usage
 
 ```bash
-uvx pycodegate . --verbose --diff
+uvx pycodegate . --verbose
+# or scan only what changed vs a base branch:
+uvx pycodegate . --verbose --diff main
 ```
 
 ## Workflow

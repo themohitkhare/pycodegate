@@ -15,7 +15,8 @@ def _is_str_const(node: ast.expr) -> bool:
 def _is_dynamic_string(node: ast.expr) -> bool:
     """Return True if *node* builds a string dynamically (f-string, concat, %-format, .format())."""
     if isinstance(node, ast.JoinedStr):
-        return True
+        # An f-string with no interpolation is a static string, not injection.
+        return any(isinstance(value, ast.FormattedValue) for value in node.values)
     if isinstance(node, ast.BinOp):
         if isinstance(node.op, ast.Add) and (_is_str_const(node.left) or _is_str_const(node.right)):
             return True

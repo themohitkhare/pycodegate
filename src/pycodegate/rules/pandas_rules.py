@@ -16,19 +16,52 @@ class PandasRules(BaseRules):
         if tree is None:
             return []
 
+        df_names = self._dataframe_names(tree)
         diags: list[Diagnostic] = []
-        diags.extend(self._check_chained_indexing(tree, filename))
+        diags.extend(self._check_chained_indexing(tree, filename, df_names))
         diags.extend(self._check_inplace_assignment(tree, filename))
-        diags.extend(self._check_nan_comparison(tree, filename))
+        diags.extend(self._check_nan_comparison(tree, filename, df_names))
         return diags
 
-    def _check_chained_indexing(self, tree: ast.Module, filename: str) -> list[Diagnostic]:
+    @staticmethod
+    def _dataframe_names(tree: ast.Module) -> set[str]:
+        """Names assigned from a pandas constructor/reader (pd.DataFrame/Series/read_*)."""
+        names: set[str] = set()
+        for node in ast.walk(tree):
+            if not (isinstance(node, ast.Assign) and isinstance(node.value, ast.Call)):
+                continue
+            func = node.value.func
+            if not (isinstance(func, ast.Attribute) and isinstance(func.value, ast.Name)):
+                continue
+            if func.value.id not in ("pd", "pandas"):
+                continue
+            if func.attr in ("DataFrame", "Series") or func.attr.startswith("read_"):
+                for target in node.targets:
+                    if isinstance(target, ast.Name):
+                        names.add(target.id)
+        return names
+
+    @staticmethod
+    def _subscript_root(node: ast.expr) -> str | None:
+        """Return the root variable name of a subscript/attribute chain, if any."""
+        current = node
+        while isinstance(current, (ast.Subscript, ast.Attribute)):
+            current = current.value
+        return current.id if isinstance(current, ast.Name) else None
+
+    def _check_chained_indexing(
+        self, tree: ast.Module, filename: str, df_names: set[str]
+    ) -> list[Diagnostic]:
         results: list[Diagnostic] = []
         for node in ast.walk(tree):
             if not isinstance(node, ast.Assign):
                 continue
             for target in node.targets:
-                if isinstance(target, ast.Subscript) and isinstance(target.value, ast.Subscript):
+                if (
+                    isinstance(target, ast.Subscript)
+                    and isinstance(target.value, ast.Subscript)
+                    and self._subscript_root(target) in df_names
+                ):
                     results.append(
                         Diagnostic(
                             file_path=filename,
@@ -74,7 +107,9 @@ class PandasRules(BaseRules):
                     break
         return results
 
-    def _check_nan_comparison(self, tree: ast.Module, filename: str) -> list[Diagnostic]:
+    def _check_nan_comparison(
+        self, tree: ast.Module, filename: str, df_names: set[str]
+    ) -> list[Diagnostic]:
         results: list[Diagnostic] = []
         for node in ast.walk(tree):
             if not isinstance(node, ast.Compare):
@@ -85,9 +120,11 @@ class PandasRules(BaseRules):
 
             sides = [node.left, *node.comparators]
             has_nan_or_none = any(self._is_nan_or_none(s) for s in sides)
-            has_subscript = any(isinstance(s, ast.Subscript) for s in sides)
+            has_df_subscript = any(
+                isinstance(s, ast.Subscript) and self._subscript_root(s) in df_names for s in sides
+            )
 
-            if has_nan_or_none and has_subscript:
+            if has_nan_or_none and has_df_subscript:
                 results.append(
                     Diagnostic(
                         file_path=filename,

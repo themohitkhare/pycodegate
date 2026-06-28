@@ -21,6 +21,7 @@ def _cyclomatic_complexity(func_node: ast.FunctionDef | ast.AsyncFunctionDef) ->
       - and / or boolean operators
       - assert statements
       - ternary expressions (IfExp)
+      - match/case arms
     """
     complexity = 1
     for node in ast.walk(func_node):
@@ -33,7 +34,7 @@ def _cyclomatic_complexity(func_node: ast.FunctionDef | ast.AsyncFunctionDef) ->
             complexity += 1
         elif isinstance(node, ast.BoolOp):
             complexity += len(node.values) - 1
-        elif isinstance(node, (ast.Assert, ast.IfExp)):
+        elif isinstance(node, (ast.Assert, ast.IfExp, ast.match_case)):
             complexity += 1
     return complexity
 

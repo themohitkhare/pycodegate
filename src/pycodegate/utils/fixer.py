@@ -9,8 +9,8 @@ import subprocess
 def run_ruff_fix(project_path: str) -> int:
     """Run ``ruff check --fix`` on *project_path* and return the number of fixes applied.
 
-    Returns 0 if ruff is not installed or if no fixes were made.
-    Raises no exceptions — all subprocess errors are caught gracefully.
+    Returns the number of fixes applied, 0 if no fixes were made (or on a
+    subprocess/OS error), or -1 if ruff is not installed.
     """
     try:
         result = subprocess.run(
@@ -24,9 +24,9 @@ def run_ruff_fix(project_path: str) -> int:
     except (OSError, subprocess.SubprocessError):
         return 0
 
-    # ruff prints something like "Fixed 3 errors." to stdout or stderr
+    # Modern ruff prints "Fixed 3 errors." or "3 fixed, …"; accept both.
     output = result.stdout + result.stderr
-    match = re.search(r"Fixed (\d+)", output)
+    match = re.search(r"(\d+) fixed", output) or re.search(r"Fixed (\d+)", output)
     if match:
         return int(match.group(1))
     return 0

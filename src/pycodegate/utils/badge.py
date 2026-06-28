@@ -16,8 +16,8 @@ def generate_badge(score: int, label: str) -> str:
     else:
         color = "red"
 
-    score_text = urllib.parse.quote(f"{score}/100")
-    return f"![pycodegate score](https://img.shields.io/badge/py--gate-{score_text}-{color})"
+    score_text = urllib.parse.quote(f"{score}/100", safe="")
+    return f"![pycodegate score](https://img.shields.io/badge/pycodegate-{score_text}-{color})"
 
 
 def generate_ci_workflow() -> str:

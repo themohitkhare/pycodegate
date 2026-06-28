@@ -51,10 +51,25 @@ class ArchitectureRules(BaseRules):
         return diags
 
     def _walk_nesting(
-        self, node: ast.AST, depth: int, filename: str, diags: list[Diagnostic]
+        self,
+        node: ast.AST,
+        depth: int,
+        filename: str,
+        diags: list[Diagnostic],
+        is_elif: bool = False,
     ) -> None:
-        nesting_nodes = (ast.If, ast.For, ast.While, ast.With, ast.Try)
-        if isinstance(node, nesting_nodes):
+        nesting_nodes = (
+            ast.If,
+            ast.For,
+            ast.AsyncFor,
+            ast.While,
+            ast.With,
+            ast.AsyncWith,
+            ast.Try,
+        )
+        # An `elif` continues its parent `if` at the same nesting level, so it must
+        # not deepen the count — only a true block does.
+        if isinstance(node, nesting_nodes) and not is_elif:
             depth += 1
             if depth >= MAX_NESTING_DEPTH:
                 diags.append(
@@ -70,6 +85,18 @@ class ArchitectureRules(BaseRules):
                         cost=1.0,
                     )
                 )
+
+        if isinstance(node, ast.If):
+            for child in node.body:
+                self._walk_nesting(child, depth, filename, diags)
+            if len(node.orelse) == 1 and isinstance(node.orelse[0], ast.If):
+                # `elif`: same level, continue the chain without deepening.
+                self._walk_nesting(node.orelse[0], depth, filename, diags, is_elif=True)
+            else:
+                for child in node.orelse:
+                    self._walk_nesting(child, depth, filename, diags)
+            return
+
         for child in ast.iter_child_nodes(node):
             self._walk_nesting(child, depth, filename, diags)
 

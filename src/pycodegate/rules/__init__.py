@@ -25,7 +25,7 @@ from pycodegate.rules.structure import StructureRules as StructureRules
 
 
 def get_all_rule_sets() -> list[BaseRules]:
-    """Return all available rule sets."""
+    """Return the core rule sets that run on every Python file."""
     return [
         SecurityRules(),
         PerformanceRules(),
@@ -35,21 +35,23 @@ def get_all_rule_sets() -> list[BaseRules]:
     ]
 
 
-_FRAMEWORK_MAP: dict[str, type[BaseRules]] = {
-    "django": DjangoRules,
-    "fastapi": FastAPIRules,
-    "flask": FlaskRules,
-    "pydantic": PydanticRules,
-    "sqlalchemy": SQLAlchemyRules,
-    "celery": CeleryRules,
-    "requests": RequestsRules,
-    "logging": LoggingRules,
-    "pandas": PandasRules,
-    "pytest": PytestRules,
-    "numpy": NumpyRules,
-}
+def get_import_gated_rules() -> list[tuple[BaseRules, str]]:
+    """Return (rule_set, trigger_module) pairs.
 
-
-def get_framework_rules(frameworks: list[str]) -> list[BaseRules]:
-    """Return framework/library-specific rule sets for all detected frameworks."""
-    return [_FRAMEWORK_MAP[f]() for f in frameworks if f in _FRAMEWORK_MAP]
+    Each library rule set runs only on files that actually import its module, so a
+    pandas rule never fires on a file that does not touch pandas — activation is
+    per-file and import-based rather than project-wide from the dependency manifest.
+    """
+    return [
+        (DjangoRules(), "django"),
+        (FastAPIRules(), "fastapi"),
+        (FlaskRules(), "flask"),
+        (PydanticRules(), "pydantic"),
+        (SQLAlchemyRules(), "sqlalchemy"),
+        (CeleryRules(), "celery"),
+        (RequestsRules(), "requests"),
+        (LoggingRules(), "logging"),
+        (PandasRules(), "pandas"),
+        (NumpyRules(), "numpy"),
+        (PytestRules(), "pytest"),
+    ]

@@ -58,10 +58,11 @@ def _maybe_run_fix(opts: CliOptions) -> None:
     if not opts.fix:
         return
     fixes = run_ruff_fix(opts.directory)
+    # Progress goes to stderr so it never pollutes --json/--score/--sarif stdout.
     if fixes == -1:
-        click.echo("ruff not found, skipping auto-fix")
+        click.echo("ruff not found, skipping auto-fix", err=True)
     else:
-        click.echo(f"Fixed {fixes} issues via ruff")
+        click.echo(f"Fixed {fixes} issues via ruff", err=True)
 
 
 def _build_config(opts: CliOptions):

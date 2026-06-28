@@ -8,6 +8,17 @@ from pathlib import Path
 from pycodegate.types import Category, Diagnostic, Severity
 
 
+def _has_annotated_param(node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
+    """True if any parameter (of any kind, excluding self/cls) carries an annotation."""
+    args = node.args
+    params = [*args.posonlyargs, *args.args, *args.kwonlyargs]
+    if args.vararg:
+        params.append(args.vararg)
+    if args.kwarg:
+        params.append(args.kwarg)
+    return any(p.annotation for p in params if p.arg not in ("self", "cls"))
+
+
 class StructureRules:
     """Project-level structure health checks."""
 
@@ -51,8 +62,12 @@ class StructureRules:
 
     @staticmethod
     def _count_lines(files: list[str]) -> int:
-        """Return total line count across *files*, ignoring unreadable files."""
-        return sum(len(Path(f).read_text().splitlines()) for f in files if Path(f).exists())
+        """Return total line count across *files*, ignoring unreadable/non-UTF-8 files."""
+        return sum(
+            len(Path(f).read_text(encoding="utf-8", errors="ignore").splitlines())
+            for f in files
+            if Path(f).exists()
+        )
 
     def _check_test_ratio(
         self, path: Path, test_files: list[str], src_files: list[str]
@@ -218,7 +233,7 @@ class StructureRules:
             for node in ast.walk(tree):
                 if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                     total_funcs += 1
-                    if node.returns or any(a.annotation for a in node.args.args if a.arg != "self"):
+                    if node.returns or _has_annotated_param(node):
                         annotated_funcs += 1
 
         if total_funcs > 0:

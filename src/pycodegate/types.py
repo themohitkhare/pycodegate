@@ -72,3 +72,4 @@ class ScanResult:
     project: ProjectInfo
     elapsed_ms: int
     profile: str | None = None
+    category_scores: dict[Category, tuple[int, int]] = field(default_factory=dict)

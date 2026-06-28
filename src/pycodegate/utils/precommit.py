@@ -27,21 +27,18 @@ fi
 echo "pycodegate: score $SCORE/{min_score} — passed"
 """
 
-    # Don't overwrite existing hook — append or warn
+    # Only manage a hook we own. Never modify a foreign hook: appending our block
+    # after another hook's `exit` makes it dead code, and rewriting it destroys it.
     if hook_path.exists():
         existing = hook_path.read_text()
-        if "pycodegate" in existing:
-            hook_path.write_text(hook_content)
-            hook_path.chmod(0o755)
-            return f"Updated pre-commit hook at {hook_path} (min-score: {min_score})"
-        else:
-            # Append to existing hook
-            # Strip the shebang line before appending
-            lines = hook_content.splitlines(keepends=True)
-            body = "".join(lines[1:]) if lines[0].startswith("#!/") else hook_content
-            with open(hook_path, "a") as f:
-                f.write("\n" + body)
-            return f"Appended pycodegate to existing pre-commit hook at {hook_path}"
+        if "pycodegate" not in existing:
+            return (
+                f"A pre-commit hook already exists at {hook_path}. Leaving it untouched — "
+                "add `pycodegate . --score` to it manually, or use the pre-commit framework."
+            )
+        hook_path.write_text(hook_content)
+        hook_path.chmod(0o755)
+        return f"Updated pre-commit hook at {hook_path} (min-score: {min_score})"
 
     hook_path.write_text(hook_content)
     hook_path.chmod(0o755)

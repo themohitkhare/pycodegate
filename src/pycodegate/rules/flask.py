@@ -86,30 +86,37 @@ class FlaskRules(BaseRules):
 
     def _check_sql_string_format(self, tree: ast.Module, filename: str) -> list[Diagnostic]:
         diags: list[Diagnostic] = []
+        seen: set[tuple[int, int]] = set()
         for node in ast.walk(tree):
-            if not isinstance(node, ast.Assign) or not isinstance(node.value, ast.JoinedStr):
+            if not isinstance(node, ast.JoinedStr):
                 continue
-            if self._fstring_contains_sql(node.value):
-                diags.append(
-                    Diagnostic(
-                        file_path=filename,
-                        rule="no-sql-string-format",
-                        severity=Severity.ERROR,
-                        category=Category.FLASK,
-                        message="SQL query built with f-string — SQL injection risk",
-                        help="Use parameterized queries with placeholders",
-                        line=node.lineno,
-                        column=node.col_offset,
-                        cost=3.0,
-                    )
+            pos = (node.lineno, node.col_offset)
+            if pos in seen or not self._fstring_contains_sql(node):
+                continue
+            seen.add(pos)
+            diags.append(
+                Diagnostic(
+                    file_path=filename,
+                    rule="no-sql-string-format",
+                    severity=Severity.ERROR,
+                    category=Category.FLASK,
+                    message="SQL query built with f-string — SQL injection risk",
+                    help="Use parameterized queries with placeholders",
+                    line=node.lineno,
+                    column=node.col_offset,
+                    cost=3.0,
                 )
+            )
         return diags
 
     @staticmethod
     def _fstring_contains_sql(joined_str: ast.JoinedStr) -> bool:
-        return any(
+        # Require both an SQL keyword and at least one interpolation (injection risk).
+        has_interpolation = any(isinstance(val, ast.FormattedValue) for val in joined_str.values)
+        has_sql = any(
             isinstance(val, ast.Constant)
             and isinstance(val.value, str)
             and _SQL_PATTERN.search(val.value)
             for val in joined_str.values
         )
+        return has_interpolation and has_sql

@@ -12,6 +12,7 @@ from rich.text import Text
 
 from pycodegate import __version__
 from pycodegate.constants import CATEGORY_WEIGHTS, FRAMEWORK_CATEGORY_MAP
+from pycodegate.score import category_breakdown
 from pycodegate.types import Category, Diagnostic, ScanResult, Severity
 
 BAR_WIDTH = 50
@@ -78,42 +79,6 @@ def _score_color(score: int) -> str:
     return "red"
 
 
-def _compute_category_sub_scores(
-    diagnostics: list[Diagnostic],
-) -> dict[Category, tuple[int, int]]:
-    """Return {resolved_category: (earned, max)} for each category in CATEGORY_WEIGHTS."""
-    total_weight = sum(CATEGORY_WEIGHTS.values())
-    max_deductions = {cat: round(w / total_weight * 100) for cat, w in CATEGORY_WEIGHTS.items()}
-    # Fix rounding to ensure sum == 100
-    diff = 100 - sum(max_deductions.values())
-    if diff != 0:
-        highest = max(CATEGORY_WEIGHTS, key=lambda k: CATEGORY_WEIGHTS[k])
-        max_deductions[highest] += diff
-
-    # Group diagnostics by resolved category
-    by_category: dict[Category, list[Diagnostic]] = defaultdict(list)
-    for d in diagnostics:
-        resolved = FRAMEWORK_CATEGORY_MAP.get(d.category, d.category)
-        by_category[resolved].append(d)
-
-    # Compute actual deduction per category (same logic as score.py)
-    actual_deductions: dict[Category, float] = {}
-    for cat, diags in by_category.items():
-        costs = sorted([d.cost for d in diags], reverse=True)
-        cat_total = sum(c if i < 3 else c * 0.1 for i, c in enumerate(costs))
-        cap = max_deductions.get(cat, 10)
-        actual_deductions[cat] = min(cat_total, cap)
-
-    # Build (earned, max) per category
-    result: dict[Category, tuple[int, int]] = {}
-    for cat, max_ded in max_deductions.items():
-        deducted = round(actual_deductions.get(cat, 0.0))
-        earned = max_ded - deducted
-        result[cat] = (earned, max_ded)
-
-    return result
-
-
 def format_summary(result: ScanResult) -> str:
     """Format the full scan summary as a string (for testing)."""
     lines: list[str] = []
@@ -152,8 +117,9 @@ def print_scan_result(result: ScanResult, verbose: bool = False) -> None:
     console.print(f"  [dim]Source files:[/dim]    {p.source_file_count}")
     console.print()
 
-    # Category-grouped diagnostics with sub-scores
-    _print_category_groups(console, result.diagnostics, verbose)
+    # Category-grouped diagnostics with sub-scores (single source of truth from scoring)
+    breakdown = result.category_scores or category_breakdown(result.diagnostics)
+    _print_category_groups(console, result.diagnostics, breakdown, verbose)
 
     # Summary panel
     color = _score_color(result.score.value)
@@ -187,6 +153,7 @@ def output_json(result: ScanResult) -> None:
         "path": p.path,
         "score": result.score.value,
         "label": result.score.label,
+        "profile": result.profile,
         "errors": errors,
         "warnings": warnings,
         "elapsed_ms": result.elapsed_ms,
@@ -231,6 +198,18 @@ def _sarif_rules(diagnostics: list[Diagnostic]) -> list[dict]:
     ]
 
 
+def _sarif_location(diag: Diagnostic) -> dict:
+    """Build a SARIF physicalLocation, omitting the region for project-level findings.
+
+    SARIF 2.1.0 requires region.startLine >= 1, so a line of 0 (project-level
+    diagnostics) points at the artifact only rather than an invalid line 0.
+    """
+    physical: dict = {"artifactLocation": {"uri": diag.file_path}}
+    if diag.line and diag.line >= 1:
+        physical["region"] = {"startLine": diag.line, "startColumn": (diag.column or 0) + 1}
+    return {"physicalLocation": physical}
+
+
 def _sarif_results(diagnostics: list[Diagnostic]) -> list[dict]:
     """Build SARIF results array from diagnostics."""
     return [
@@ -238,17 +217,7 @@ def _sarif_results(diagnostics: list[Diagnostic]) -> list[dict]:
             "ruleId": d.rule,
             "level": "error" if d.severity == Severity.ERROR else "warning",
             "message": {"text": d.message},
-            "locations": [
-                {
-                    "physicalLocation": {
-                        "artifactLocation": {"uri": d.file_path},
-                        "region": {
-                            "startLine": d.line,
-                            "startColumn": (d.column or 0) + 1,
-                        },
-                    }
-                }
-            ],
+            "locations": [_sarif_location(d)],
         }
         for d in diagnostics
     ]
@@ -319,11 +288,10 @@ def _print_category_with_issues(
 def _print_category_groups(
     console: Console,
     diagnostics: list[Diagnostic],
+    sub_scores: dict[Category, tuple[int, int]],
     verbose: bool,
 ) -> None:
     """Print diagnostics grouped by category with sub-scores."""
-    sub_scores = _compute_category_sub_scores(diagnostics)
-
     # Build rule-grouped diagnostics per resolved category
     by_category: dict[Category, list[Diagnostic]] = defaultdict(list)
     for d in diagnostics:

@@ -256,8 +256,7 @@ files = ["tests/fixtures/**", "migrations/**", "scripts/**"]
 "src/legacy/*.py" = ["high-complexity", "no-god-function"]
 
 [scoring]
-max-deduction.Security = 20
-max-deduction.Dead Code = 0  # disable dead-code penalty entirely
+max-deduction = { Security = 20, "Dead Code" = 0 }  # 0 disables a category's penalty
 ```
 
 Or use `pyproject.toml`:
@@ -294,13 +293,15 @@ PyCodeGate auto-detects a project profile and adjusts rule weights accordingly. 
 
 ## Pre-commit Hook
 
-Use `--pre-commit` to run PyCodeGate as a pre-commit hook. It automatically scans only the staged files:
+`--pre-commit` installs a git `pre-commit` hook (one-time) that scores the project on
+every commit and blocks the commit when the score falls below the threshold:
 
 ```bash
-pycodegate . --pre-commit --fail-on error
+pycodegate . --pre-commit --min-score 80
 ```
 
-Add to `.pre-commit-config.yaml`:
+If you use the [pre-commit framework](https://pre-commit.com), add it to
+`.pre-commit-config.yaml` instead:
 
 ```yaml
 repos:
@@ -308,7 +309,7 @@ repos:
     hooks:
       - id: pycodegate
         name: PyCodeGate quality check
-        entry: pycodegate . --pre-commit --fail-on error
+        entry: pycodegate . --fail-on error
         language: system
         types: [python]
         pass_filenames: false

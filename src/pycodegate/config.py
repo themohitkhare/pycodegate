@@ -53,7 +53,7 @@ def _parse_doctor_toml(path: Path) -> Config:
         ignore_rules=ignore.get("rules", []),
         ignore_files=ignore.get("files", []),
         profile=options.get("profile", None),
-        per_file_suppress=data.get("per-file-suppress", {}),
+        per_file_suppress=_read_per_file_suppress(data),
         max_deduction=_read_max_deduction(data),
     )
 
@@ -76,9 +76,14 @@ def _parse_pyproject_toml(path: Path) -> Config:
         ignore_rules=ignore.get("rules", []),
         ignore_files=ignore.get("files", []),
         profile=section.get("profile", None),
-        per_file_suppress=section.get("per-file-suppress", {}),
+        per_file_suppress=_read_per_file_suppress(section),
         max_deduction=_read_max_deduction(section),
     )
+
+
+def _read_per_file_suppress(table: dict) -> dict:
+    """Read per-file rule suppression, accepting the documented ``per-file-ignores`` alias."""
+    return table.get("per-file-suppress") or table.get("per-file-ignores") or {}
 
 
 def _read_max_deduction(table: dict) -> dict:

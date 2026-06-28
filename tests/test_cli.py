@@ -97,8 +97,9 @@ def test_badge_output(tmp_path):
     runner = CliRunner()
     result = runner.invoke(main, [str(tmp_path), "--badge"])
     assert result.exit_code == 0
-    assert "https://img.shields.io/badge/py--gate-" in result.output
-    assert "shields.io" in result.output
+    assert "https://img.shields.io/badge/pycodegate-" in result.output
+    assert "%2F100" in result.output  # the slash must be URL-encoded
+    assert "/100-" not in result.output  # ...and never left bare
 
 
 def test_min_score_pass(tmp_path):

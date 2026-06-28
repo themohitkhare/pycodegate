@@ -31,7 +31,7 @@ def _build_budget(
     if max_deduction_overrides:
         for cat, val in max_deduction_overrides.items():
             if cat in max_deductions:
-                max_deductions[cat] = val
+                max_deductions[cat] = max(0, min(100, val))
 
     return max_deductions
 
@@ -47,31 +47,47 @@ def _score_label(value: int) -> str:
     return LABEL_CRITICAL
 
 
-def calculate_score(
-    diagnostics: list[Diagnostic], max_deduction_overrides: dict | None = None
-) -> Score:
-    """Calculate a 0-100 health score from diagnostics using category budgets.
+def _category_deductions(diagnostics: list[Diagnostic], max_deductions: dict) -> dict:
+    """Return the capped deduction per resolved category (diminishing returns applied).
 
-    Each category has a weight that determines its maximum deduction budget.
-    Within a category, the top 3 findings are counted at full cost; additional
-    findings apply diminishing returns (10% each) to reward fixing top issues.
+    Within a category the top 3 findings count at full cost; additional findings
+    apply diminishing returns (10% each) to reward fixing the worst issues first.
     """
-    max_deductions = _build_budget(max_deduction_overrides)
-
-    # Group diagnostics by resolved category
     by_category: dict = defaultdict(list)
     for d in diagnostics:
         resolved = FRAMEWORK_CATEGORY_MAP.get(d.category, d.category)
         by_category[resolved].append(d)
 
-    # Calculate deduction per category with diminishing returns
-    total_deduction = 0.0
+    deductions: dict = {}
     for cat, diags in by_category.items():
         costs = sorted([d.cost for d in diags], reverse=True)
-        # Top 3 at full cost, rest at 10%
         cat_total = sum(c if i < 3 else c * 0.1 for i, c in enumerate(costs))
         cap = max_deductions.get(cat, 10)
-        total_deduction += min(cat_total, cap)
+        deductions[cat] = min(cat_total, cap)
+    return deductions
 
-    value = max(0, round(100 - total_deduction))
+
+def calculate_score(
+    diagnostics: list[Diagnostic], max_deduction_overrides: dict | None = None
+) -> Score:
+    """Calculate a 0-100 health score from diagnostics using category budgets."""
+    max_deductions = _build_budget(max_deduction_overrides)
+    total_deduction = sum(_category_deductions(diagnostics, max_deductions).values())
+    value = max(0, min(100, round(100 - total_deduction)))
     return Score(value=value, label=_score_label(value))
+
+
+def category_breakdown(
+    diagnostics: list[Diagnostic], max_deduction_overrides: dict | None = None
+) -> dict:
+    """Return {category: (earned, max)} using the SAME budget the score uses.
+
+    Single source of truth so the displayed per-category sub-scores honour
+    profile/config max-deduction overrides exactly as the headline score does.
+    """
+    max_deductions = _build_budget(max_deduction_overrides)
+    deductions = _category_deductions(diagnostics, max_deductions)
+    return {
+        cat: (max_ded - round(deductions.get(cat, 0.0)), max_ded)
+        for cat, max_ded in max_deductions.items()
+    }
