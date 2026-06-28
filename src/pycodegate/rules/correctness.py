@@ -1,4 +1,4 @@
-"""Correctness rules: mutable defaults, bare except, broad exception, assert in prod, return in __init__."""
+"""Correctness rules: mutable defaults, bare except, assert in prod, return in __init__."""
 
 from __future__ import annotations
 
@@ -19,7 +19,6 @@ class CorrectnessRules(BaseRules):
         diags: list[Diagnostic] = []
         diags.extend(self._check_mutable_defaults(tree, filename))
         diags.extend(self._check_bare_except(tree, filename))
-        diags.extend(self._check_broad_exception(tree, filename))
         diags.extend(self._check_assert_in_production(tree, filename))
         diags.extend(self._check_return_in_init(tree, filename))
         return diags
@@ -28,21 +27,23 @@ class CorrectnessRules(BaseRules):
         diags: list[Diagnostic] = []
         for node in ast.walk(tree):
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                for default in node.args.defaults + node.args.kw_defaults:
-                    if default is not None and isinstance(default, (ast.List, ast.Dict, ast.Set)):
-                        diags.append(
-                            Diagnostic(
-                                file_path=filename,
-                                rule="no-mutable-default",
-                                severity=Severity.ERROR,
-                                category=Category.CORRECTNESS,
-                                message="Mutable default argument — shared across all calls",
-                                help="Use None as default and create the mutable inside the function body",
-                                line=node.lineno,
-                                column=node.col_offset,
-                                cost=2.0,
-                            )
+                defaults = node.args.defaults + node.args.kw_defaults
+                if any(
+                    d is not None and isinstance(d, (ast.List, ast.Dict, ast.Set)) for d in defaults
+                ):
+                    diags.append(
+                        Diagnostic(
+                            file_path=filename,
+                            rule="no-mutable-default",
+                            severity=Severity.ERROR,
+                            category=Category.CORRECTNESS,
+                            message="Mutable default argument — shared across all calls",
+                            help="Use None as default and create the mutable inside the function body",
+                            line=node.lineno,
+                            column=node.col_offset,
+                            cost=2.0,
                         )
+                    )
         return diags
 
     def _check_bare_except(self, tree: ast.Module, filename: str) -> list[Diagnostic]:
@@ -64,33 +65,7 @@ class CorrectnessRules(BaseRules):
                 )
         return diags
 
-    def _check_broad_exception(self, tree: ast.Module, filename: str) -> list[Diagnostic]:
-        diags: list[Diagnostic] = []
-        for node in ast.walk(tree):
-            if isinstance(node, ast.ExceptHandler) and node.type is not None:
-                if isinstance(node.type, ast.Name) and node.type.id in (
-                    "Exception",
-                    "BaseException",
-                ):
-                    diags.append(
-                        Diagnostic(
-                            file_path=filename,
-                            rule="no-broad-exception",
-                            severity=Severity.WARNING,
-                            category=Category.CORRECTNESS,
-                            message=f"Catching '{node.type.id}' is too broad — masks real errors",
-                            help="Catch specific exception types (ValueError, TypeError, etc.)",
-                            line=node.lineno,
-                            column=node.col_offset,
-                            cost=1.0,
-                        )
-                    )
-        return diags
-
     def _check_assert_in_production(self, tree: ast.Module, filename: str) -> list[Diagnostic]:
-        if filename.startswith("test_") or "/test_" in filename or filename.endswith("_test.py"):
-            return []
-
         diags: list[Diagnostic] = []
         for node in ast.walk(tree):
             if isinstance(node, ast.Assert):
@@ -113,8 +88,8 @@ class CorrectnessRules(BaseRules):
         diags: list[Diagnostic] = []
         for node in ast.walk(tree):
             if isinstance(node, ast.FunctionDef) and node.name == "__init__":
-                for child in ast.walk(node):
-                    if isinstance(child, ast.Return) and child.value is not None:
+                for child in self._returns_in_scope(node):
+                    if child.value is not None:
                         diags.append(
                             Diagnostic(
                                 file_path=filename,
@@ -129,3 +104,20 @@ class CorrectnessRules(BaseRules):
                             )
                         )
         return diags
+
+    @staticmethod
+    def _returns_in_scope(func: ast.FunctionDef) -> list[ast.Return]:
+        """Return statements belonging to *func* directly, not to nested scopes."""
+        returns: list[ast.Return] = []
+        nested_scopes = (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda, ast.ClassDef)
+
+        def visit(node: ast.AST) -> None:
+            for child in ast.iter_child_nodes(node):
+                if isinstance(child, nested_scopes):
+                    continue  # a nested scope owns its own return statements
+                if isinstance(child, ast.Return):
+                    returns.append(child)
+                visit(child)
+
+        visit(func)
+        return returns

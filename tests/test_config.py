@@ -87,6 +87,26 @@ structure = 5
     assert config.max_deduction == {"security": 15, "structure": 5}
 
 
+def test_max_deduction_from_scoring_section(tmp_path):
+    # The documented location is the [scoring] table.
+    toml_content = """[scoring]
+max-deduction.Security = 20
+max-deduction.Structure = 0
+"""
+    (tmp_path / "pycodegate.toml").write_text(toml_content)
+    config = load_config(str(tmp_path))
+    assert config.max_deduction == {"Security": 20, "Structure": 0}
+
+
+def test_max_deduction_from_scoring_section_pyproject(tmp_path):
+    pyproject = """[tool.pycodegate.scoring]
+"max-deduction" = { Security = 20, "Dead Code" = 0 }
+"""
+    (tmp_path / "pyproject.toml").write_text(pyproject)
+    config = load_config(str(tmp_path))
+    assert config.max_deduction == {"Security": 20, "Dead Code": 0}
+
+
 def test_per_file_suppress_from_pyproject(tmp_path):
     pyproject = """[tool.pycodegate.per-file-suppress]
 "tests/*" = ["no-bare-except"]

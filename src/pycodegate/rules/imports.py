@@ -52,6 +52,8 @@ class ImportsRules:
             for mod_b in imports:
                 if mod_b not in graph or mod_a not in graph[mod_b]:
                     continue
+                if self._is_parent_child(mod_a, mod_b):
+                    continue
                 pair = tuple(sorted([mod_a, mod_b]))
                 if pair in seen_pairs:
                     continue
@@ -70,6 +72,16 @@ class ImportsRules:
                 )
 
         return diags
+
+    @staticmethod
+    def _is_parent_child(mod_a: str, mod_b: str) -> bool:
+        """True if one module is a parent package of the other.
+
+        A package ``__init__`` importing from its own submodule (and that submodule
+        importing back from the package) is the standard facade pattern, which Python
+        resolves fine — not a real circular-import bug.
+        """
+        return mod_a.startswith(f"{mod_b}.") or mod_b.startswith(f"{mod_a}.")
 
     def _check_circular_imports(
         self, project_path: str, source_files: list[str]

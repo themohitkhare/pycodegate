@@ -15,21 +15,6 @@ for item in items:
     assert any(d.rule == "no-string-concat-in-loop" for d in diags)
 
 
-def test_global_import_in_function():
-    source = """
-def process():
-    import json
-    return json.dumps({})
-"""
-    diags = _run(source)
-    assert any(d.rule == "no-import-in-function" for d in diags)
-
-
-def test_top_level_import_is_ok():
-    diags = _run("import json\njson.dumps({})")
-    assert not any(d.rule == "no-import-in-function" for d in diags)
-
-
 def test_star_import():
     diags = _run("from os.path import *")
     assert any(d.rule == "no-star-import" for d in diags)

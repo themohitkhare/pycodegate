@@ -63,16 +63,33 @@ src/pycodegate/
   constants.py    — Magic numbers and thresholds
   rules/
     base.py       — Abstract BaseRules with AST parsing
-    security.py   — eval, exec, pickle, yaml, secrets, hashes
-    performance.py — string concat, imports in functions, star imports
+    security.py   — eval, exec, pickle, yaml, secrets, hashes, os.system, shell
+    performance.py — string concat in loops, star imports
     architecture.py — giant modules, nesting, god functions, too many args
+    complexity.py — cyclomatic complexity
     correctness.py — mutable defaults, bare except, assert, return in init
-    django.py     — raw SQL, DEBUG, SECRET_KEY, N+1
-    fastapi.py    — sync endpoints, missing response_model
-    flask.py      — secret key, debug mode, SQL f-strings
+    imports.py    — circular imports (project-level)
+    structure.py  — tests/README/LICENSE/linter/type-checker, type coverage
+    dependencies.py — pip-audit vulnerability scan
     dead_code.py  — Vulture integration
+    django.py / fastapi.py / flask.py — web framework rules
+    pydantic.py / sqlalchemy.py / celery.py / requests_rules.py /
+      logging_rules.py / pandas_rules.py / pytest_rules.py / numpy_rules.py — library rules
   utils/
-    file_discovery.py — Python file discovery (git + fallback)
+    file_discovery.py — Python file discovery (git + fallback), excludes non-source dirs
+    is_test_file.py   — test-file detection (drives test-only rule suppression)
     ast_helpers.py    — Common AST utilities
     diff.py           — Git diff file resolution
 ```
+
+## Precision is the product
+
+PyCodeGate is a quality **gate** — false positives destroy its value. Be precision-first:
+
+- A new rule MUST ship with a negative fixture/test proving it does NOT fire on the
+  idiomatic, correct form of the pattern, not just a positive test.
+- Rules that are idiomatic in tests (asserts, long fixtures) belong in
+  `RULES_SUPPRESSED_IN_TESTS` in `constants.py`; suppression happens centrally in
+  `scan._suppress_test_noise`, keyed on the project-relative path.
+- Validate rule changes against the corpus benchmark: `python benchmarks/run_corpus.py`.
+  A rule lighting up respected codebases needs to be narrowed, suppressed, or removed.

@@ -54,7 +54,7 @@ def _parse_doctor_toml(path: Path) -> Config:
         ignore_files=ignore.get("files", []),
         profile=options.get("profile", None),
         per_file_suppress=data.get("per-file-suppress", {}),
-        max_deduction=data.get("max-deduction", {}),
+        max_deduction=_read_max_deduction(data),
     )
 
 
@@ -77,5 +77,17 @@ def _parse_pyproject_toml(path: Path) -> Config:
         ignore_files=ignore.get("files", []),
         profile=section.get("profile", None),
         per_file_suppress=section.get("per-file-suppress", {}),
-        max_deduction=section.get("max-deduction", {}),
+        max_deduction=_read_max_deduction(section),
     )
+
+
+def _read_max_deduction(table: dict) -> dict:
+    """Read scoring max-deduction overrides.
+
+    Documented location is the ``[scoring]`` table (``max-deduction.Security = 20``);
+    the historical top-level ``[max-deduction]`` table is still accepted.
+    """
+    scoring = table.get("scoring", {})
+    if isinstance(scoring, dict) and "max-deduction" in scoring:
+        return scoring["max-deduction"]
+    return table.get("max-deduction", {})

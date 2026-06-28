@@ -338,7 +338,7 @@ def _print_category_groups(
         earned, maximum = sub_scores.get(cat, (CATEGORY_WEIGHTS[cat], CATEGORY_WEIGHTS[cat]))
         cat_diags = by_category.get(cat, [])
 
-        if earned == maximum:
+        if not cat_diags:
             console.print(
                 f"  [bold]{emoji} {name}[/bold] "
                 f"[green]({earned}/{maximum})[/green] [green]✓[/green]"

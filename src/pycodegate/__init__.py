@@ -1,3 +1,10 @@
-"""Python Doctor - Diagnose your Python project's health."""
+"""PyCodeGate — the quality gate for AI-generated Python code."""
 
-__version__ = "0.2.0"
+from __future__ import annotations
+
+from importlib.metadata import PackageNotFoundError, version
+
+try:
+    __version__ = version("pycodegate")
+except PackageNotFoundError:  # running from a source tree without an install
+    __version__ = "0.0.0+unknown"

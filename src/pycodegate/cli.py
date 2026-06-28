@@ -1,4 +1,4 @@
-"""CLI entry point for py-doctor."""
+"""CLI entry point for pycodegate."""
 
 from __future__ import annotations
 

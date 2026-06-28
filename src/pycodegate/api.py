@@ -1,4 +1,4 @@
-"""Programmatic API for python-doctor."""
+"""Programmatic API for pycodegate."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ def diagnose(
     dead_code: bool = True,
     diff_base: str | None = None,
 ) -> ScanResult:
-    """Run python-doctor analysis programmatically."""
+    """Run pycodegate analysis programmatically."""
     config = load_config(project_path)
     config.lint = lint
     config.dead_code = dead_code

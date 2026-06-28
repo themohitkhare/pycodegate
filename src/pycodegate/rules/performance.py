@@ -1,4 +1,4 @@
-"""Performance rules: string concat in loops, imports in functions, star imports."""
+"""Performance rules: string concat in loops, star imports."""
 
 from __future__ import annotations
 
@@ -18,7 +18,6 @@ class PerformanceRules(BaseRules):
 
         diags: list[Diagnostic] = []
         diags.extend(self._check_string_concat_in_loop(tree, filename))
-        diags.extend(self._check_import_in_function(tree, filename))
         diags.extend(self._check_star_imports(tree, filename))
         return diags
 
@@ -62,27 +61,6 @@ class PerformanceRules(BaseRules):
                 if isinstance(target, ast.Name):
                     names.add(target.id)
         return names
-
-    def _check_import_in_function(self, tree: ast.Module, filename: str) -> list[Diagnostic]:
-        diags: list[Diagnostic] = []
-        for node in ast.walk(tree):
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                for child in ast.walk(node):
-                    if isinstance(child, (ast.Import, ast.ImportFrom)):
-                        diags.append(
-                            Diagnostic(
-                                file_path=filename,
-                                rule="no-import-in-function",
-                                severity=Severity.WARNING,
-                                category=Category.PERFORMANCE,
-                                message="Import inside function body — re-imported on every call",
-                                help="Move imports to the top of the module",
-                                line=child.lineno,
-                                column=child.col_offset,
-                                cost=0.5,
-                            )
-                        )
-        return diags
 
     def _check_star_imports(self, tree: ast.Module, filename: str) -> list[Diagnostic]:
         diags: list[Diagnostic] = []

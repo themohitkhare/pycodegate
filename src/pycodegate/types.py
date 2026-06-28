@@ -1,4 +1,4 @@
-"""Core data types for python-doctor diagnostics."""
+"""Core data types for pycodegate diagnostics."""
 
 from __future__ import annotations
 

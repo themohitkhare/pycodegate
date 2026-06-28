@@ -18,6 +18,42 @@ _SECRET_VAR_PATTERNS = re.compile(
 # Patterns that look like actual secret values (not empty/placeholder)
 _SECRET_VALUE_MIN_LENGTH = 7
 
+# Substrings that mark a value as an obvious placeholder rather than a real secret
+_PLACEHOLDER_MARKERS = (
+    "your-",
+    "your_",
+    "changeme",
+    "change-me",
+    "example",
+    "placeholder",
+    "dummy",
+    "xxxx",
+    "<",
+    "...",
+    "insecure",
+    "test",
+    "fake",
+    "sample",
+)
+
+
+def _is_marked_non_security(node: ast.Call) -> bool:
+    """True if a hashlib call passes ``usedforsecurity=False``."""
+    return any(
+        kw.arg == "usedforsecurity"
+        and isinstance(kw.value, ast.Constant)
+        and kw.value.value is False
+        for kw in node.keywords
+    )
+
+
+def _looks_like_placeholder(value: str) -> bool:
+    """True if a string is an obvious non-secret placeholder."""
+    lowered = value.lower()
+    if any(marker in lowered for marker in _PLACEHOLDER_MARKERS):
+        return True
+    return len(set(value)) <= 2  # e.g. "xxxxxxxx", "00000000"
+
 
 class SecurityRules(BaseRules):
     """Security-related checks."""
@@ -127,6 +163,8 @@ class SecurityRules(BaseRules):
             if not isinstance(node.value, ast.Constant) or not isinstance(node.value.value, str):
                 continue
             if len(node.value.value) < _SECRET_VALUE_MIN_LENGTH:
+                continue
+            if _looks_like_placeholder(node.value.value):
                 continue
             for target in node.targets:
                 if isinstance(target, ast.Name) and _SECRET_VAR_PATTERNS.search(target.id):
@@ -244,6 +282,7 @@ class SecurityRules(BaseRules):
                     node.func.attr in ("md5", "sha1")
                     and isinstance(node.func.value, ast.Name)
                     and node.func.value.id == "hashlib"
+                    and not _is_marked_non_security(node)
                 ):
                     diags.append(
                         Diagnostic(

@@ -62,6 +62,29 @@ def test_type_checking_import_not_flagged(tmp_path):
     assert not any(d.rule == "imports/circular" for d in diags)
 
 
+def test_package_facade_not_flagged(tmp_path):
+    """A package __init__ importing its own submodule (and back) is not a real cycle."""
+    pkg = tmp_path / "pkg"
+    pkg.mkdir()
+    (pkg / "__init__.py").write_text("from pkg.sites import Site\n")
+    (pkg / "sites.py").write_text("import pkg\n\nclass Site: ...\n")
+    rules = ImportsRules()
+    diags = rules.check_project(str(tmp_path), [str(pkg / "__init__.py"), str(pkg / "sites.py")])
+    assert not any(d.rule == "imports/circular" for d in diags)
+
+
+def test_sibling_cycle_still_flagged(tmp_path):
+    """A genuine A<->B cycle between sibling modules is still reported."""
+    pkg = tmp_path / "pkg"
+    pkg.mkdir()
+    (pkg / "__init__.py").write_text("")
+    (pkg / "a.py").write_text("from pkg.b import thing\n")
+    (pkg / "b.py").write_text("from pkg.a import other\n")
+    rules = ImportsRules()
+    diags = rules.check_project(str(tmp_path), [str(pkg / "a.py"), str(pkg / "b.py")])
+    assert any(d.rule == "imports/circular" for d in diags)
+
+
 def test_empty_project(tmp_path):
     rules = ImportsRules()
     diags = rules.check_project(str(tmp_path), [])

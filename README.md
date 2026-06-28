@@ -19,7 +19,9 @@ AI coding agents ship code fast — but fast doesn't mean safe. Every `eval()` a
 
 PyCodeGate detects your project's context: framework (Django, FastAPI, Flask), Python version, package manager (uv, poetry, pip), and test framework. That context drives which rules are active — Django projects get SQL injection checks, FastAPI projects get async-correctness checks, and so on.
 
-It then runs two analysis passes **in parallel**: a lint pass that evaluates 40+ rules across 8 categories (Security, Correctness, Complexity, Architecture, Performance, Structure, Imports, Dead Code), and a dead-code pass powered by [Vulture](https://github.com/jendrikseipp/vulture) that finds unused functions, classes, imports, and variables.
+It then runs analysis passes **in parallel**: a lint pass across 9 categories (Security, Correctness, Complexity, Architecture, Performance, Structure, Imports, Dependencies, Dead Code), a dead-code pass powered by [Vulture](https://github.com/jendrikseipp/vulture) that finds unused functions, classes, imports, and variables, and an optional dependency-vulnerability pass via [pip-audit](https://github.com/pypa/pip-audit).
+
+PyCodeGate is **precision-first**: it is meant to stay quiet on idiomatic, correct code so that a finding always means something. Test files only receive rules that make sense for tests (asserts, long fixtures, and long test functions are not flagged), and generated or non-source trees — `migrations`, `examples`, `docs`, and vendored directories — are skipped. The rule set is benchmarked against a corpus of respected PyPI packages (see [`benchmarks/`](benchmarks/)) to keep false positives down.
 
 Findings are filtered through your configuration and scored using a **weighted category-budget system**. Each category has a maximum deduction budget proportional to its weight. Within a category the top 3 findings apply at full cost; additional findings apply diminishing returns (10% each), so fixing the worst issues always moves the needle. The final result is a **0–100 health score** with a label: Excellent (90+), Great (75–89), Needs work (50–74), or Critical (<50).
 
@@ -73,7 +75,7 @@ pycodegate . --json
 
 ```json
 {
-  "version": "0.1.0",
+  "version": "0.3.0",
   "path": ".",
   "score": 87,
   "label": "Great",
@@ -191,26 +193,33 @@ jobs:
 | `--verbose` | off | Show file path and line number per finding |
 | `--score` | off | Print only the numeric score and exit |
 | `--json` | off | Emit structured JSON (for agents and CI) |
+| `--sarif` | off | Emit SARIF 2.1.0 (for GitHub Code Scanning) |
 | `--fix` | off | Run `ruff --fix` before scanning |
 | `--diff TEXT` | — | Scan only files changed vs this base branch |
 | `--fail-on [error\|warning\|none]` | `none` | Exit code 1 when findings at this level exist |
+| `--min-score INT` | — | Exit code 1 when the score is below this threshold |
+| `--profile [cli\|web\|library\|script]` | auto | Override the auto-detected project profile |
+| `--badge` | off | Print a shields.io badge markdown snippet |
+| `--ci` | off | Print a ready-to-use GitHub Actions workflow |
+| `--pre-commit` | off | Install a git pre-commit hook |
 | `-v, --version` | — | Show version and exit |
 | `-h, --help` | — | Show help and exit |
 
 ## What It Checks
 
-| Category | Weight | Max Deduction | What it catches |
-|----------|--------|---------------|-----------------|
-| Security | 5 | ~24 pts | `eval`, `exec`, `pickle.load`, unsafe YAML, hardcoded secrets, weak hashes |
-| Correctness | 4 | ~19 pts | Mutable defaults, bare/broad except, assert in production, bad `__init__` return |
-| Complexity | 3 | ~14 pts | Cyclomatic complexity > 15 (warning) or > 25 (error) |
-| Architecture | 3 | ~14 pts | Giant modules (>500 lines), deep nesting (>5), god functions (>50 lines), too many args (>7) |
-| Performance | 2 | ~10 pts | String concat in loops, imports inside functions, star imports |
-| Structure | 2 | ~10 pts | Missing `__init__.py`, missing tests directory, no type hints |
-| Imports | 1 | ~5 pts | Circular imports, wildcard imports, import order issues |
-| Dead Code | 1 | ~5 pts | Unused functions, classes, variables, and imports via Vulture |
+| Category | Weight | What it catches |
+|----------|--------|-----------------|
+| Security | 5 | `eval`, `exec`, `pickle.load`, unsafe YAML, hardcoded secrets, weak hashes (excluding `usedforsecurity=False`), `os.system`, `shell=True`, `tempfile.mktemp` |
+| Correctness | 4 | Mutable defaults, bare except, assert in production, bad `__init__` return |
+| Complexity | 3 | Cyclomatic complexity > 15 (warning) or > 25 (error) |
+| Architecture | 3 | Giant modules (>500 lines), deep nesting (>5), god functions (>50 lines), too many args (>7) |
+| Performance | 2 | String concatenation in loops, star imports |
+| Structure | 2 | Missing tests, README, LICENSE, linter/type-checker config, low type coverage |
+| Imports | 1 | Circular imports between sibling modules |
+| Dependencies | 1 | Known-vulnerable dependencies (via `pip-audit`, when installed) |
+| Dead Code | 1 | Unused functions, classes, variables, and imports via Vulture |
 
-Framework-specific rules (Django, FastAPI, Flask) are mapped into the Security or Correctness budget.
+Weights are normalized to a 100-point deduction budget. Framework- and library-specific rules (Django, FastAPI, Flask, Pydantic, SQLAlchemy, Celery, requests, logging, pandas, pytest, NumPy) are mapped into the Security or Correctness budget.
 
 ## Scoring
 
@@ -278,10 +287,10 @@ PyCodeGate auto-detects a project profile and adjusts rule weights accordingly. 
 
 | Profile | Auto-detected when | Adjustments |
 |---------|--------------------|-------------|
-| `cli` | `[project.scripts]` in pyproject.toml | Architecture rules weighted up; dead-code weighted down |
-| `web` | Django / FastAPI / Flask detected | Security and correctness weighted up; framework rules active |
-| `library` | No scripts, no framework, has `py.typed` | Public API checks active; dead-code weighted up |
-| `script` | Single-file project or `scripts/` directory | Architecture rules relaxed; complexity thresholds raised |
+| `cli` | `[project.scripts]` or a CLI dependency (click, typer, …) | Security budget relaxed; `subprocess`/`shell` rules suppressed |
+| `web` | Django / FastAPI / Flask / Starlette / aiohttp / … detected | Framework rules active |
+| `library` | Has a `[build-system]` and no scripts | Default budgets |
+| `script` | No package `__init__.py` and ≤ 5 top-level `.py` files | Structure budget relaxed; `no-tests`/`no-license` suppressed |
 
 ## Pre-commit Hook
 

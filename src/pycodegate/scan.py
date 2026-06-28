@@ -8,6 +8,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from pycodegate.constants import RULES_SUPPRESSED_IN_TESTS
 from pycodegate.discover import discover_project
 from pycodegate.profile import PROFILES, detect_profile
 from pycodegate.rules import get_all_rule_sets, get_framework_rules
@@ -19,6 +20,7 @@ from pycodegate.score import calculate_score
 from pycodegate.types import Diagnostic, ScanResult
 from pycodegate.utils.diff import get_changed_files
 from pycodegate.utils.file_discovery import find_python_files
+from pycodegate.utils.is_test_file import is_test_file
 
 if TYPE_CHECKING:
     from pycodegate.config import Config
@@ -41,6 +43,7 @@ def scan_project(
 
     files = _resolve_files(project_path, diff_base)
     all_diags = _run_checks(files, project.frameworks, project_path, config)
+    all_diags = _suppress_test_noise(all_diags, project_path)
     all_diags = _apply_filters(all_diags, config, project_path, profile.suppressed_rules)
     max_deduction_overrides = _build_max_deduction_overrides(
         profile.max_deduction_overrides, config.max_deduction
@@ -96,6 +99,27 @@ def _run_checks(
         dependencies_diags = dependencies_future.result()
 
     return lint_diags + dead_code_diags + imports_diags + structure_diags + dependencies_diags
+
+
+def _suppress_test_noise(diags: list[Diagnostic], project_path: str) -> list[Diagnostic]:
+    """Drop findings that are idiomatic in test files (asserts, long tests, fixtures).
+
+    Test detection runs on the project-relative path so a project that merely lives
+    under a directory named ``tests`` is not mistaken for test code wholesale.
+    """
+    root = Path(project_path).resolve()
+
+    def relative(file_path: str) -> str:
+        try:
+            return str(Path(file_path).resolve().relative_to(root))
+        except ValueError:
+            return file_path
+
+    return [
+        d
+        for d in diags
+        if not (d.rule in RULES_SUPPRESSED_IN_TESTS and is_test_file(relative(d.file_path)))
+    ]
 
 
 def _apply_filters(

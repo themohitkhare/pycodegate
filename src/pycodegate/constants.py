@@ -1,4 +1,4 @@
-"""Constants and thresholds for python-doctor."""
+"""Constants and thresholds for pycodegate."""
 
 from pycodegate.types import Category
 
@@ -21,8 +21,29 @@ CATEGORY_WEIGHTS: dict = {
     Category.PERFORMANCE: 2,
     Category.STRUCTURE: 2,
     Category.IMPORTS: 1,
+    Category.DEPENDENCIES: 1,
     Category.DEAD_CODE: 1,
 }
+
+# Rules suppressed in test files: idiomatic in tests, noise as findings.
+# Asserts are the pytest idiom; tests are long, deeply nested, take many fixtures,
+# and legitimately contain fixture "secrets", weak hashes, and pickle round-trips.
+RULES_SUPPRESSED_IN_TESTS: frozenset[str] = frozenset(
+    {
+        "no-assert-in-production",
+        "no-god-function",
+        "no-giant-module",
+        "no-deep-nesting",
+        "too-many-arguments",
+        "high-complexity",
+        "critical-complexity",
+        "structure/large-file",
+        "no-hardcoded-secret",
+        "no-weak-hash",
+        "no-pickle-load",
+        "no-string-concat-in-loop",
+    }
+)
 
 # Framework categories map to their parent category for scoring
 FRAMEWORK_CATEGORY_MAP: dict = {
