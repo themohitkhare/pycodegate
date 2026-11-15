@@ -1,6 +1,6 @@
 [project]
 name = "pycodegate"
-version = "0.4.1"
+version = "0.5.0"
 description = "Trust, but verify. The quality gate for AI-generated Python code."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -77,3 +77,13 @@ files = ["tests/fixtures/**", "tests/**"]
 [tool.pycodegate.per-file-suppress]
 # Click CLI entry-points must declare all options as individual parameters
 "src/pycodegate/cli.py" = ["too-many-arguments"]
+
+[[tool.pycodegate.import-boundaries]]
+files = ["src/pycodegate/rules/*.py"]
+forbidden = ["pycodegate.cli", "pycodegate.output"]
+message = "Keep analysis independent of presentation; return diagnostics to the caller."
+
+[[tool.pycodegate.import-boundaries]]
+files = ["src/pycodegate/types.py"]
+forbidden = ["pycodegate.rules", "pycodegate.scan", "pycodegate.cli", "pycodegate.output"]
+message = "Keep shared data types independent of scanning and presentation."

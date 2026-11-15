@@ -11,6 +11,7 @@ from pycodegate.rules.dependencies import DependencyRules as DependencyRules
 from pycodegate.rules.django import DjangoRules
 from pycodegate.rules.fastapi import FastAPIRules
 from pycodegate.rules.flask import FlaskRules
+from pycodegate.rules.import_boundaries import ImportBoundaryRules as ImportBoundaryRules
 from pycodegate.rules.imports import ImportsRules as ImportsRules
 from pycodegate.rules.logging_rules import LoggingRules
 from pycodegate.rules.numpy_rules import NumpyRules

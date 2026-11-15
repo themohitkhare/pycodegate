@@ -280,6 +280,48 @@ files = ["tests/fixtures/**"]
 
 If both files exist, `pycodegate.toml` takes precedence. CLI flags always override config values.
 
+## Import boundaries
+
+Turn architectural review feedback into a deterministic check. Import boundaries
+are opt-in: forbid a module (and its submodules) in selected files and provide
+actionable guidance for the developer or agent.
+
+In `pycodegate.toml`:
+
+```toml
+[[import-boundaries]]
+files = ["src/app/domain/*.py"]
+forbidden = ["app.infrastructure", "requests", "fastapi"]
+message = "Keep the domain independent of infrastructure; use a domain port."
+
+[[import-boundaries]]
+files = ["src/app/*.py"]
+forbidden = ["app.legacy_client"]
+message = "Use app.clients instead of adding new legacy dependencies."
+```
+
+For `pyproject.toml`, use `[[tool.pycodegate.import-boundaries]]` with the same
+fields. `files` uses case-sensitive project-relative POSIX path globs; `*` can
+span directories. `forbidden` contains literal dotted module prefixes, so
+`requests` matches `requests.sessions` but not `requests_extra`. Both arrays
+must contain at least one nonempty string. The optional `message` supplies the
+diagnostic's remediation guidance.
+
+Checks cover static `import` and `from ... import ...` statements, including
+aliases, nested functions, and type-checking blocks. Relative imports are resolved
+using the path under the project root, stripping a leading `src/` for conventional
+src layouts. Custom import roots, runtime imports via `importlib` or `__import__`,
+and re-export tracing are not supported. Importing a name from a package is
+treated as importing that dotted name, so avoid forbidden prefixes that collide
+with allowed attributes on the same package.
+
+Violations emit `imports/boundary` errors with the source location and your
+message in terminal, JSON, and SARIF output. Use
+`pycodegate . --fail-on error` to enforce the boundary in CI. Existing rule and
+per-file ignores apply; `--no-lint` disables boundary checks. Without configured
+boundaries, scan behavior is unchanged. Static checks supplement tests and
+runtime verification; a high score alone does not prove behavior is correct.
+
 ## Profiles
 
 PyCodeGate auto-detects a project profile and adjusts rule weights accordingly. You can also set a profile explicitly in config (`profile = "library"`).

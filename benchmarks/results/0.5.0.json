@@ -1,0 +1,227 @@
+{
+  "release": "0.5.0",
+  "date": "2026-11-15",
+  "baseline_commit": "2a294b180daefe0511e253905b685de68d761175",
+  "candidate_code_commit": "8960979",
+  "packages": {
+    "requests": {
+      "files": 35,
+      "score": 68,
+      "findings": 169,
+      "matches_baseline": true,
+      "source_distribution": "requests-2.34.2"
+    },
+    "flask": {
+      "files": 65,
+      "score": 74,
+      "findings": 61,
+      "matches_baseline": true,
+      "source_distribution": "flask-3.1.3"
+    },
+    "click": {
+      "files": 76,
+      "score": 72,
+      "findings": 102,
+      "matches_baseline": true,
+      "source_distribution": "click-8.5.1"
+    },
+    "rich": {
+      "files": 100,
+      "score": 58,
+      "findings": 273,
+      "matches_baseline": true,
+      "source_distribution": "rich-15.0.0"
+    },
+    "httpx": {
+      "files": 60,
+      "score": 74,
+      "findings": 110,
+      "matches_baseline": true,
+      "source_distribution": "httpx-0.28.1"
+    },
+    "sqlalchemy": {
+      "files": 603,
+      "score": 22,
+      "findings": 2256,
+      "matches_baseline": true,
+      "source_distribution": "sqlalchemy-2.1.8"
+    },
+    "fastapi": {
+      "files": 738,
+      "score": 53,
+      "findings": 2383,
+      "matches_baseline": true,
+      "source_distribution": "fastapi-0.163.1"
+    },
+    "starlette": {
+      "files": 84,
+      "score": 71,
+      "findings": 162,
+      "matches_baseline": true,
+      "source_distribution": "starlette-1.10.0"
+    },
+    "pydantic": {
+      "files": 324,
+      "score": 35,
+      "findings": 720,
+      "matches_baseline": true,
+      "source_distribution": "pydantic-2.14.3"
+    },
+    "jinja2": {
+      "files": 49,
+      "score": 64,
+      "findings": 104,
+      "matches_baseline": true,
+      "source_distribution": "jinja2-3.1.6"
+    },
+    "werkzeug": {
+      "files": 84,
+      "score": 59,
+      "findings": 156,
+      "matches_baseline": true,
+      "source_distribution": "werkzeug-3.1.9"
+    },
+    "urllib3": {
+      "files": 80,
+      "score": 71,
+      "findings": 144,
+      "matches_baseline": true,
+      "source_distribution": "urllib3-2.8.0"
+    },
+    "django": {
+      "files": 2592,
+      "score": 33,
+      "findings": 969,
+      "matches_baseline": true,
+      "source_distribution": "django-6.1.3"
+    },
+    "celery": {
+      "files": 406,
+      "score": 37,
+      "findings": 472,
+      "matches_baseline": true,
+      "source_distribution": "celery-5.7.0"
+    },
+    "black": {
+      "files": 366,
+      "score": 35,
+      "findings": 392,
+      "matches_baseline": true,
+      "source_distribution": "black-26.10.1"
+    },
+    "isort": {
+      "files": 110,
+      "score": 70,
+      "findings": 144,
+      "matches_baseline": true,
+      "source_distribution": "isort-9.0.2"
+    },
+    "pytest": {
+      "files": 253,
+      "score": 35,
+      "findings": 1168,
+      "matches_baseline": true,
+      "source_distribution": "pytest-9.2.0"
+    },
+    "attrs": {
+      "files": 53,
+      "score": 77,
+      "findings": 54,
+      "matches_baseline": true,
+      "source_distribution": "attrs-26.1.0"
+    },
+    "typer": {
+      "files": 339,
+      "score": 66,
+      "findings": 155,
+      "matches_baseline": true,
+      "source_distribution": "typer-0.29.1"
+    },
+    "pyyaml": {
+      "files": 44,
+      "score": 58,
+      "findings": 127,
+      "matches_baseline": true,
+      "source_distribution": "pyyaml-6.0.3"
+    },
+    "redis": {
+      "files": 267,
+      "score": 43,
+      "findings": 1143,
+      "matches_baseline": true,
+      "source_distribution": "redis-8.1.0"
+    },
+    "scrapy": {
+      "files": 538,
+      "score": 45,
+      "findings": 417,
+      "matches_baseline": true,
+      "source_distribution": "scrapy-2.20.0"
+    },
+    "beautifulsoup4": {
+      "files": 38,
+      "score": 72,
+      "findings": 90,
+      "matches_baseline": true,
+      "source_distribution": "beautifulsoup4-4.15.0"
+    },
+    "loguru": {
+      "files": 19,
+      "score": 67,
+      "findings": 60,
+      "matches_baseline": true,
+      "source_distribution": "loguru-0.8.0"
+    },
+    "pandas": {
+      "files": 1448,
+      "score": 20,
+      "findings": 3210,
+      "matches_baseline": true,
+      "source_distribution": "pandas-3.1.1"
+    },
+    "numpy": {
+      "files": 1046,
+      "score": 22,
+      "findings": 2930,
+      "matches_baseline": true,
+      "source_distribution": "numpy-2.5.4"
+    },
+    "pillow": {
+      "files": 292,
+      "score": 45,
+      "findings": 666,
+      "matches_baseline": true,
+      "source_distribution": "pillow-13.0.0"
+    },
+    "tornado": {
+      "files": 77,
+      "score": 41,
+      "findings": 309,
+      "matches_baseline": true,
+      "source_distribution": "tornado-6.6.1"
+    },
+    "aiohttp": {
+      "files": 144,
+      "score": 44,
+      "findings": 430,
+      "matches_baseline": true,
+      "source_distribution": "aiohttp-3.14.5"
+    }
+  },
+  "files": 10330,
+  "diagnostic_regressions": 0,
+  "configured_boundary_checks": {
+    "requests": {
+      "forbidden_dependency": "urllib3",
+      "expected_violations": 28
+    },
+    "flask": {
+      "forbidden_dependency": "werkzeug",
+      "expected_violations": 79
+    },
+    "fastapi": {
+      "forbidden_dependency": "starlette",
+      "expected_violations": 115
+    }
+  }
+}

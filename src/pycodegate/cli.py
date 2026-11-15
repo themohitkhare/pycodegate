@@ -67,7 +67,10 @@ def _maybe_run_fix(opts: CliOptions) -> None:
 
 def _build_config(opts: CliOptions):
     """Load config and apply CLI overrides."""
-    config = load_config(opts.directory)
+    try:
+        config = load_config(opts.directory)
+    except ValueError as error:
+        raise click.ClickException(str(error)) from error
     config.lint = opts.lint
     config.dead_code = opts.dead_code
     config.verbose = opts.verbose

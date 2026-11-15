@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 from pycodegate.constants import RULES_SUPPRESSED_IN_TESTS
 from pycodegate.discover import discover_project
 from pycodegate.profile import PROFILES, detect_profile
-from pycodegate.rules import get_all_rule_sets, get_import_gated_rules
+from pycodegate.rules import ImportBoundaryRules, get_all_rule_sets, get_import_gated_rules
 from pycodegate.rules.dead_code import DeadCodeRules
 from pycodegate.rules.dependencies import DependencyRules
 from pycodegate.rules.imports import ImportsRules
@@ -81,7 +81,9 @@ def _run_checks(
     """Run lint + dead code + imports + structure + dependency checks in parallel."""
     str_files = [str(f) for f in files]
     with ThreadPoolExecutor(max_workers=5) as executor:
-        lint_future = executor.submit(_run_lint, files, config) if config.lint else None
+        lint_future = (
+            executor.submit(_run_lint, files, config, project_path) if config.lint else None
+        )
         dead_code_future = (
             executor.submit(_run_dead_code, project_path, config) if config.dead_code else None
         )
@@ -190,9 +192,12 @@ def _matches_ignore(file_path: str, patterns: list[str], root: Path) -> bool:
 def _run_lint(
     files: list[Path],
     config: Config,
+    project_path: str = ".",
 ) -> list[Diagnostic]:
     """Run core rules on every file; library rules only on files importing the library."""
     core_rules = get_all_rule_sets()
+    if config.import_boundaries:
+        core_rules.append(ImportBoundaryRules(project_path, config.import_boundaries))
     gated_rules = get_import_gated_rules()
     diags: list[Diagnostic] = []
 
