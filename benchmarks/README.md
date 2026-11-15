@@ -23,3 +23,9 @@ removed. Genuine issues (a 100-branch function, `verify=False`) should remain.
 
 The precision fixes derived from this benchmark are locked in by
 `tests/test_precision.py` and the per-rule unit tests under `tests/rules/`.
+
+## Release validation
+
+[0.5.0 validation](results/0.5.0.md) records the Python test matrix, packaging
+checks, configured boundary checks, and an exact baseline comparison across the
+29-package corpus. Machine-readable results are saved alongside the report.
