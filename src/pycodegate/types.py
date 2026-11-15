@@ -11,6 +11,13 @@ class Severity(str, Enum):
     WARNING = "warning"
 
 
+@dataclass(frozen=True)
+class ImportBoundary:
+    files: tuple[str, ...]
+    forbidden: tuple[str, ...]
+    message: str
+
+
 class Category(str, Enum):
     SECURITY = "Security"
     PERFORMANCE = "Performance"
