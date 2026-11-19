@@ -44,6 +44,8 @@ def main() -> None:
     actual = Counter((row["repo"], row["severity"], row["sha256"]) for row in review)
     if actual != expected:
         raise SystemExit("The reviewed diagnostics differ from the deterministic sample")
+    if any(digest(row["diagnostic"]) != row["sha256"] for row in review):
+        raise SystemExit("A published diagnostic differs from the reviewed scan output")
     classifications = Counter(row["classification"] for row in review)
     if classifications.keys() - VERDICTS:
         raise SystemExit("Unknown classification in the review")
