@@ -1,0 +1,852 @@
+[
+  {
+    "repo": "django/django",
+    "severity": "error",
+    "diagnostic": {
+      "rule": "no-exec",
+      "severity": "error",
+      "category": "Security",
+      "message": "Avoid exec() — it executes arbitrary code",
+      "help": "Refactor to avoid dynamic code execution",
+      "file_path": "django/core/management/commands/shell.py",
+      "line": 88
+    },
+    "sha256": "0532bd8ec928cd006a3aa24ead3da9aea5029c94b1910955fdc57018967464da",
+    "classification": "false-positive",
+    "rationale": "The management command starts a local interactive Python shell and intentionally honors the user's Python startup script. Executing that script is the feature documented in the surrounding code.",
+    "source_url": "https://github.com/django/django/blob/f16e25dcb9fe55734ba4ea2b00ac34405b7df74a/django/core/management/commands/shell.py#L88"
+  },
+  {
+    "repo": "django/django",
+    "severity": "error",
+    "diagnostic": {
+      "rule": "no-exec",
+      "severity": "error",
+      "category": "Security",
+      "message": "Avoid exec() — it executes arbitrary code",
+      "help": "Refactor to avoid dynamic code execution",
+      "file_path": "tests/view_tests/tests/test_debug.py",
+      "line": 918
+    },
+    "sha256": "053e27ddd1f6f2ca7f5d2cc9ca930d18f48a6a44adf685e885f38632cae19d86",
+    "classification": "false-positive",
+    "rationale": "A debugger test compiles a fixed test string and runs it to create a synthetic traceback, which it then feeds to ExceptionReporter. The suggested removal would defeat the fixture.",
+    "source_url": "https://github.com/django/django/blob/f16e25dcb9fe55734ba4ea2b00ac34405b7df74a/tests/view_tests/tests/test_debug.py#L918"
+  },
+  {
+    "repo": "django/django",
+    "severity": "error",
+    "diagnostic": {
+      "rule": "critical-complexity",
+      "severity": "error",
+      "category": "Complexity",
+      "message": "Function 'build_filter' has cyclomatic complexity 34 (max 15)",
+      "help": "Break into smaller functions or simplify conditional logic",
+      "file_path": "django/db/models/sql/query.py",
+      "line": 1487
+    },
+    "sha256": "05c4223dead0b6a034d4e5f13858d2337ceeb2d9498fa0992571b7303c32379e",
+    "classification": "actionable",
+    "rationale": "The filter builder resolves input expressions, sets up and trims joins, and then translates negated and nullable lookups into clauses. The final null-semantics block is a concrete candidate for a separately tested helper.",
+    "source_url": "https://github.com/django/django/blob/f16e25dcb9fe55734ba4ea2b00ac34405b7df74a/django/db/models/sql/query.py#L1487"
+  },
+  {
+    "repo": "django/django",
+    "severity": "error",
+    "diagnostic": {
+      "rule": "critical-complexity",
+      "severity": "error",
+      "category": "Complexity",
+      "message": "Function 'handle' has cyclomatic complexity 46 (max 15)",
+      "help": "Break into smaller functions or simplify conditional logic",
+      "file_path": "django/core/management/commands/dumpdata.py",
+      "line": 104
+    },
+    "sha256": "061f8883405e7c5f0e4ac3bce093c00115c09a67c6ece3a6adeffee1f1f09fbd",
+    "classification": "actionable",
+    "rationale": "The command combines model selection, a nested object iterator, progress reporting, and output serialization. Model selection and output handling offer distinct refactoring targets. The reported 46 includes branches of the nested iterator. Using the same counting rules with nested definitions pruned gives 33, still above the critical threshold of 25.",
+    "source_url": "https://github.com/django/django/blob/f16e25dcb9fe55734ba4ea2b00ac34405b7df74a/django/core/management/commands/dumpdata.py#L104"
+  },
+  {
+    "repo": "django/django",
+    "severity": "error",
+    "diagnostic": {
+      "rule": "critical-complexity",
+      "severity": "error",
+      "category": "Complexity",
+      "message": "Function '_check_relationship_model' has cyclomatic complexity 33 (max 15)",
+      "help": "Break into smaller functions or simplify conditional logic",
+      "file_path": "django/db/models/fields/related.py",
+      "line": 1598
+    },
+    "sha256": "0bbda8026b7fbb3f1b0a04c03416faa6dc54f2a8c24cd0d0eadb61ae9c6a26ef",
+    "classification": "actionable",
+    "rationale": "A single method validates the intermediary model and, in a separate roughly 100-line section, validates the explicit through_fields option. The latter already has its own input and error cases and could be tested independently.",
+    "source_url": "https://github.com/django/django/blob/f16e25dcb9fe55734ba4ea2b00ac34405b7df74a/django/db/models/fields/related.py#L1598"
+  },
+  {
+    "repo": "django/django",
+    "severity": "warning",
+    "diagnostic": {
+      "rule": "high-complexity",
+      "severity": "warning",
+      "category": "Complexity",
+      "message": "Function '_check_field_name_clashes' has cyclomatic complexity 21 (max 15)",
+      "help": "Break into smaller functions or simplify conditional logic",
+      "file_path": "django/db/models/base.py",
+      "line": 2011
+    },
+    "sha256": "001499eb740593f65f8199ecbd3caed258a14a55eb7aaa423776e9e4e2155d29",
+    "classification": "context-dependent",
+    "rationale": "This check makes several ordered passes over parent and local fields, building one lookup of names and attribute names. The decisions are real, but splitting the passes would still require sharing that state. The count alone gives little reason to change it.",
+    "source_url": "https://github.com/django/django/blob/f16e25dcb9fe55734ba4ea2b00ac34405b7df74a/django/db/models/base.py#L2011"
+  },
+  {
+    "repo": "django/django",
+    "severity": "warning",
+    "diagnostic": {
+      "rule": "no-god-function",
+      "severity": "warning",
+      "category": "Architecture",
+      "message": "Function 'connect' is 76 lines (max 50)",
+      "help": "Break into smaller functions with single responsibilities",
+      "file_path": "django/dispatch/dispatcher.py",
+      "line": 102
+    },
+    "sha256": "008299bb8172a6c50223f2ca5451262c41e1608b3b566911897104fcb252ec16",
+    "classification": "false-positive",
+    "rationale": "The reported 76-line signal registration method includes 33 lines of API documentation. Its body validates and registers a receiver under the dispatcher's lock. The length trigger counts prose as evidence of multiple responsibilities.",
+    "source_url": "https://github.com/django/django/blob/f16e25dcb9fe55734ba4ea2b00ac34405b7df74a/django/dispatch/dispatcher.py#L102"
+  },
+  {
+    "repo": "django/django",
+    "severity": "warning",
+    "diagnostic": {
+      "rule": "high-complexity",
+      "severity": "warning",
+      "category": "Complexity",
+      "message": "Function 'get_select' has cyclomatic complexity 19 (max 15)",
+      "help": "Break into smaller functions or simplify conditional logic",
+      "file_path": "django/db/models/sql/compiler.py",
+      "line": 240
+    },
+    "sha256": "008c95e5c0765a31c6a3ba1af4cda0a23847fdb1bf783dc2a815a8df15324bed",
+    "classification": "actionable",
+    "rationale": "The compiler first maps selected expressions and annotations to output positions, then compiles each expression and handles empty or full result sets in a separate loop. The latter is a concrete unit for a helper and focused tests.",
+    "source_url": "https://github.com/django/django/blob/f16e25dcb9fe55734ba4ea2b00ac34405b7df74a/django/db/models/sql/compiler.py#L240"
+  },
+  {
+    "repo": "django/django",
+    "severity": "warning",
+    "diagnostic": {
+      "rule": "no-n-plus-one-query",
+      "severity": "warning",
+      "category": "Django",
+      "message": "Potential N+1 query — accessing related object in a loop",
+      "help": "Use select_related() or prefetch_related() on the queryset",
+      "file_path": "django/db/models/base.py",
+      "line": 703
+    },
+    "sha256": "0096bd0df66de63be81443e33876ba6e7e00b0ca1a9fc6957edb16fd0c54597a",
+    "classification": "false-positive",
+    "rationale": "The loop iterates over _meta.parents.values(). Options initializes parents as a Python dictionary. Accessing field metadata on its values does not iterate a database queryset, so eager loading is inapplicable.",
+    "source_url": "https://github.com/django/django/blob/f16e25dcb9fe55734ba4ea2b00ac34405b7df74a/django/db/models/base.py#L703"
+  },
+  {
+    "repo": "django/django",
+    "severity": "warning",
+    "diagnostic": {
+      "rule": "too-many-arguments",
+      "severity": "warning",
+      "category": "Architecture",
+      "message": "Function '__init__' has 12 arguments (max 7)",
+      "help": "Group related arguments into a dataclass or TypedDict",
+      "file_path": "django/forms/forms.py",
+      "line": 73
+    },
+    "sha256": "00ae5ee66aefed3e89db4c76975c8846b4b87b4124401175b3d8319dab327060",
+    "classification": "context-dependent",
+    "rationale": "The public form constructor has many independent options for binding data and configuring rendering. Bundling them into a dataclass would change a public calling convention. The parameter count alone cannot justify that compatibility cost.",
+    "source_url": "https://github.com/django/django/blob/f16e25dcb9fe55734ba4ea2b00ac34405b7df74a/django/forms/forms.py#L73"
+  },
+  {
+    "repo": "huggingface/transformers",
+    "severity": "error",
+    "diagnostic": {
+      "rule": "no-mutable-default",
+      "severity": "error",
+      "category": "Correctness",
+      "message": "Mutable default argument — shared across all calls",
+      "help": "Use None as default and create the mutable inside the function body",
+      "file_path": "tests/models/vipllava/test_modeling_vipllava.py",
+      "line": 51
+    },
+    "sha256": "017672425ea8b508aa270360b32f07e9a5866161e34b74fb082a17ea2b6639e7",
+    "classification": "actionable",
+    "rationale": "The test fixture stores its default vision-feature list and configuration dictionaries directly on each tester instance. Constructing fresh containers for omitted arguments would isolate fixture state across instances. The source establishes shared identity, not a failing test.",
+    "source_url": "https://github.com/huggingface/transformers/blob/52b080b6416a7897e2af90febeb4dfad22b84d19/tests/models/vipllava/test_modeling_vipllava.py#L51"
+  },
+  {
+    "repo": "huggingface/transformers",
+    "severity": "error",
+    "diagnostic": {
+      "rule": "critical-complexity",
+      "severity": "error",
+      "category": "Complexity",
+      "message": "Function 'convert_and_load_state_dict_in_model' has cyclomatic complexity 42 (max 15)",
+      "help": "Break into smaller functions or simplify conditional logic",
+      "file_path": "src/transformers/core_model_loading.py",
+      "line": 1606
+    },
+    "sha256": "0218f35d54ba44746dd884afba30cb8deb5be064bc532cec69e28da0c95ff3f6",
+    "classification": "actionable",
+    "rationale": "The loader first maps and schedules checkpoint tensors, then converts and assigns or offloads realized parameters, and finally manages worker cleanup. Per-parameter dtype selection and converted-parameter placement are separable responsibilities.",
+    "source_url": "https://github.com/huggingface/transformers/blob/52b080b6416a7897e2af90febeb4dfad22b84d19/src/transformers/core_model_loading.py#L1606"
+  },
+  {
+    "repo": "huggingface/transformers",
+    "severity": "error",
+    "diagnostic": {
+      "rule": "no-mutable-default",
+      "severity": "error",
+      "category": "Correctness",
+      "message": "Mutable default argument — shared across all calls",
+      "help": "Use None as default and create the mutable inside the function body",
+      "file_path": "tests/models/cohere2_vision/test_modeling_cohere2_vision.py",
+      "line": 53
+    },
+    "sha256": "02cae28339258ca5bcaf656d6a74a402262f037b7715d66980a287fc24331fb2",
+    "classification": "actionable",
+    "rationale": "Default text and vision configuration dictionaries become attributes on every tester instantiated with defaults. Fresh per-instance dictionaries would prevent changes through one tester from affecting another. No cross-test failure was demonstrated.",
+    "source_url": "https://github.com/huggingface/transformers/blob/52b080b6416a7897e2af90febeb4dfad22b84d19/tests/models/cohere2_vision/test_modeling_cohere2_vision.py#L53"
+  },
+  {
+    "repo": "huggingface/transformers",
+    "severity": "error",
+    "diagnostic": {
+      "rule": "no-mutable-default",
+      "severity": "error",
+      "category": "Correctness",
+      "message": "Mutable default argument — shared across all calls",
+      "help": "Use None as default and create the mutable inside the function body",
+      "file_path": "tests/models/pe_video/test_modeling_pe_video.py",
+      "line": 204
+    },
+    "sha256": "02ec8af4132276cf36e2d55cc2d430f414f4e15c9054ffb0f5eb0f9f3147fc98",
+    "classification": "actionable",
+    "rationale": "The constructor retains the default config_kwargs dictionary on the fixture and copies its values into separate attributes. A fresh mapping for each tester would prevent shared settings and make it harder for a later edit to disagree with those attributes. This is preventive.",
+    "source_url": "https://github.com/huggingface/transformers/blob/52b080b6416a7897e2af90febeb4dfad22b84d19/tests/models/pe_video/test_modeling_pe_video.py#L204"
+  },
+  {
+    "repo": "huggingface/transformers",
+    "severity": "error",
+    "diagnostic": {
+      "rule": "critical-complexity",
+      "severity": "error",
+      "category": "Complexity",
+      "message": "Function 'convert_processors' has cyclomatic complexity 47 (max 15)",
+      "help": "Break into smaller functions or simplify conditional logic",
+      "file_path": "utils/create_dummy_models.py",
+      "line": 847
+    },
+    "sha256": "042fb362333c5f3b4e0a846a94266f10c458581891f50db2d714917dba611942",
+    "classification": "actionable",
+    "rationale": "The function collects processor types, selects tokenizers, performs compatibility checks and handles save/load fallbacks. Separating selection from persistence is useful. The reported complexity of 47 includes the nested sanity-check helper. Excluding its decisions leaves 39, still over the rule's critical threshold.",
+    "source_url": "https://github.com/huggingface/transformers/blob/52b080b6416a7897e2af90febeb4dfad22b84d19/utils/create_dummy_models.py#L847"
+  },
+  {
+    "repo": "huggingface/transformers",
+    "severity": "warning",
+    "diagnostic": {
+      "rule": "no-giant-module",
+      "severity": "warning",
+      "category": "Architecture",
+      "message": "Module has 670 lines (max 500) — consider splitting",
+      "help": "Extract related functions into separate modules",
+      "file_path": "src/transformers/models/afmoe/modeling_afmoe.py",
+      "line": 1
+    },
+    "sha256": "00071bd13afe43fa8ca262479be7a7e61db8fb93255eeaff19633e3f4fc91b98",
+    "classification": "false-positive",
+    "rationale": "The file header says modular generation produces this standalone module and CI overwrites manual edits. The suggested split targets generated output. The single output file and its size follow the project's generator convention.",
+    "source_url": "https://github.com/huggingface/transformers/blob/52b080b6416a7897e2af90febeb4dfad22b84d19/src/transformers/models/afmoe/modeling_afmoe.py#L1"
+  },
+  {
+    "repo": "huggingface/transformers",
+    "severity": "warning",
+    "diagnostic": {
+      "rule": "no-deep-nesting",
+      "severity": "warning",
+      "category": "Architecture",
+      "message": "Nesting depth 5 exceeds max 5",
+      "help": "Extract nested logic into helper functions or use early returns",
+      "file_path": "src/transformers/exporters/exporter_openvino.py",
+      "line": 991
+    },
+    "sha256": "0009034791384f8851a908fd5480982c73eb5196a7b978e54089f4a375936d1f",
+    "classification": "false-positive",
+    "rationale": "The reported depth is five, equal to the stated maximum of five. The highlighted at_front check is inside the insertion context, two loops and the crop condition. The warning's claim that the maximum was exceeded is an off-by-one error.",
+    "source_url": "https://github.com/huggingface/transformers/blob/52b080b6416a7897e2af90febeb4dfad22b84d19/src/transformers/exporters/exporter_openvino.py#L991"
+  },
+  {
+    "repo": "huggingface/transformers",
+    "severity": "warning",
+    "diagnostic": {
+      "rule": "no-god-function",
+      "severity": "warning",
+      "category": "Architecture",
+      "message": "Function 'forward' is 62 lines (max 50)",
+      "help": "Break into smaller functions with single responsibilities",
+      "file_path": "src/transformers/models/yoso/modeling_yoso.py",
+      "line": 1060
+    },
+    "sha256": "000c770998b3df28e749b39a2c90c7b867f0003043e9c05ec82c119a353b9fd9",
+    "classification": "context-dependent",
+    "rationale": "The question-answering forward method calls YOSO, projects its output into start/end logits, optionally computes a loss, and formats its return. Its expanded signature and calls contribute to the 62-line span. Whether another helper improves the model code needs maintainer judgment.",
+    "source_url": "https://github.com/huggingface/transformers/blob/52b080b6416a7897e2af90febeb4dfad22b84d19/src/transformers/models/yoso/modeling_yoso.py#L1060"
+  },
+  {
+    "repo": "huggingface/transformers",
+    "severity": "warning",
+    "diagnostic": {
+      "rule": "too-many-arguments",
+      "severity": "warning",
+      "category": "Architecture",
+      "message": "Function 'forward' has 9 arguments (max 7)",
+      "help": "Group related arguments into a dataclass or TypedDict",
+      "file_path": "src/transformers/models/speecht5/modeling_speecht5.py",
+      "line": 1449
+    },
+    "sha256": "003298a637048f4dcd695a86c625e76d72abf3ff7a4cccb798881c86c28c4996",
+    "classification": "context-dependent",
+    "rationale": "SpeechT5Decoder.forward exposes hidden states, masks, encoder states, caching and output options as separate arguments. A replacement options object would change callers' interface. The parameter count alone does not justify that change.",
+    "source_url": "https://github.com/huggingface/transformers/blob/52b080b6416a7897e2af90febeb4dfad22b84d19/src/transformers/models/speecht5/modeling_speecht5.py#L1449"
+  },
+  {
+    "repo": "huggingface/transformers",
+    "severity": "warning",
+    "diagnostic": {
+      "rule": "no-god-function",
+      "severity": "warning",
+      "category": "Architecture",
+      "message": "Function 'is_copy_consistent' is 195 lines (max 50)",
+      "help": "Break into smaller functions with single responsibilities",
+      "file_path": "utils/check_copies.py",
+      "line": 645
+    },
+    "sha256": "003bbf3b206903250d59a79756bd1eb77bb8e48c5300fc8542599ba168eb4f6e",
+    "classification": "actionable",
+    "rationale": "is_copy_consistent reads a file, resolves copy markers, reconciles ignored blocks, maps differences back to line numbers and optionally rewrites the file. The block-reconciliation and line-mapping steps have distinct inputs and could be tested independently.",
+    "source_url": "https://github.com/huggingface/transformers/blob/52b080b6416a7897e2af90febeb4dfad22b84d19/utils/check_copies.py#L645"
+  },
+  {
+    "repo": "numpy/numpy",
+    "severity": "error",
+    "diagnostic": {
+      "rule": "no-eval",
+      "severity": "error",
+      "category": "Security",
+      "message": "Avoid eval() — it executes arbitrary code",
+      "help": "Use ast.literal_eval() for safe parsing of literals",
+      "file_path": "numpy/_core/tests/test_multiarray.py",
+      "line": 4462
+    },
+    "sha256": "0033ebbbd24ae07b324cbe57786085a954bb45e96513aa0a6e334e7945f01d5f",
+    "classification": "false-positive",
+    "rationale": "This NumPy test evaluates a fixed type-construction expression in a test-provided namespace to manufacture classes with specific dispatch behavior. The expression is part of the fixture and literal parsing cannot construct those types.",
+    "source_url": "https://github.com/numpy/numpy/blob/afcbc6d21a88a7b59c5bfe115198e24ed51b3dae/numpy/_core/tests/test_multiarray.py#L4462"
+  },
+  {
+    "repo": "numpy/numpy",
+    "severity": "error",
+    "diagnostic": {
+      "rule": "critical-complexity",
+      "severity": "error",
+      "category": "Complexity",
+      "message": "Function 'buildmodule' has cyclomatic complexity 49 (max 15)",
+      "help": "Break into smaller functions or simplify conditional logic",
+      "file_path": "numpy/f2py/rules.py",
+      "line": 1313
+    },
+    "sha256": "00bb81f790bdd0bc320a4a59d563eabda2f0bf9d393ff39e3eb32cd063e1b331",
+    "classification": "actionable",
+    "rationale": "The F2PY generator prepares interfaces, assembles C output, optionally writes documentation and emits two different wrapper formats in one function. The separate output-emission stages provide concrete boundaries for extracting helpers.",
+    "source_url": "https://github.com/numpy/numpy/blob/afcbc6d21a88a7b59c5bfe115198e24ed51b3dae/numpy/f2py/rules.py#L1313"
+  },
+  {
+    "repo": "numpy/numpy",
+    "severity": "error",
+    "diagnostic": {
+      "rule": "no-eval",
+      "severity": "error",
+      "category": "Security",
+      "message": "Avoid eval() — it executes arbitrary code",
+      "help": "Use ast.literal_eval() for safe parsing of literals",
+      "file_path": "numpy/_core/tests/test_simd.py",
+      "line": 244
+    },
+    "sha256": "0147eccffea4a8dc4c2f9bd4f81e7aa190b37913243ba38301279d3fa63d9484",
+    "classification": "false-positive",
+    "rationale": "The test parametrization supplies only the two fixed builtin reduction names any and all. The call selects a reference implementation for comparison with a SIMD operation. The suggested literal parser cannot perform the lookup.",
+    "source_url": "https://github.com/numpy/numpy/blob/afcbc6d21a88a7b59c5bfe115198e24ed51b3dae/numpy/_core/tests/test_simd.py#L244"
+  },
+  {
+    "repo": "numpy/numpy",
+    "severity": "error",
+    "diagnostic": {
+      "rule": "critical-complexity",
+      "severity": "error",
+      "category": "Complexity",
+      "message": "Function 'vars2fortran' has cyclomatic complexity 57 (max 15)",
+      "help": "Break into smaller functions or simplify conditional logic",
+      "file_path": "numpy/f2py/crackfortran.py",
+      "line": 3356
+    },
+    "sha256": "01eebfdae3e3fc07872a5ba299de5c38b46fbea9c055e915be59d1c78209ca53",
+    "classification": "actionable",
+    "rationale": "One long loop handles cross-dependency warnings, callbacks, missing declarations and formatting Fortran type selectors and attributes. Selector formatting is a distinct transformation that could be extracted and tested on its own.",
+    "source_url": "https://github.com/numpy/numpy/blob/afcbc6d21a88a7b59c5bfe115198e24ed51b3dae/numpy/f2py/crackfortran.py#L3356"
+  },
+  {
+    "repo": "numpy/numpy",
+    "severity": "error",
+    "diagnostic": {
+      "rule": "no-eval",
+      "severity": "error",
+      "category": "Security",
+      "message": "Avoid eval() — it executes arbitrary code",
+      "help": "Use ast.literal_eval() for safe parsing of literals",
+      "file_path": "numpy/_core/tests/test_simd.py",
+      "line": 743
+    },
+    "sha256": "03032364f30a9efe3fd94b49ede69cc43e9d846f2a6165e9f120f485084494d0",
+    "classification": "false-positive",
+    "rationale": "The test parametrization contains two literal method selectors for SIMD load operations. It uses those known test fixtures to select the method under test. The proposed literal parser would not dispatch either method.",
+    "source_url": "https://github.com/numpy/numpy/blob/afcbc6d21a88a7b59c5bfe115198e24ed51b3dae/numpy/_core/tests/test_simd.py#L743"
+  },
+  {
+    "repo": "numpy/numpy",
+    "severity": "warning",
+    "diagnostic": {
+      "rule": "no-god-function",
+      "severity": "warning",
+      "category": "Architecture",
+      "message": "Function 'vdot' is 60 lines (max 50)",
+      "help": "Break into smaller functions with single responsibilities",
+      "file_path": "numpy/_core/multiarray.py",
+      "line": 847
+    },
+    "sha256": "00aa4bdcf09d62d015bd805cd4d9e45088d3c905e3e766203c75f84cc117d957",
+    "classification": "false-positive",
+    "rationale": "The NumPy vdot dispatch wrapper contains a docstring spanning lines 848–905 and one return statement on line 906. The 60-line threshold primarily measures the published API documentation.",
+    "source_url": "https://github.com/numpy/numpy/blob/afcbc6d21a88a7b59c5bfe115198e24ed51b3dae/numpy/_core/multiarray.py#L847"
+  },
+  {
+    "repo": "numpy/numpy",
+    "severity": "warning",
+    "diagnostic": {
+      "rule": "no-god-function",
+      "severity": "warning",
+      "category": "Architecture",
+      "message": "Function 'normalize' is 135 lines (max 50)",
+      "help": "Break into smaller functions with single responsibilities",
+      "file_path": "numpy/f2py/symbolic.py",
+      "line": 790
+    },
+    "sha256": "00ad9c143c6e377bd9b47ed502533bab4434d32c91941c579a9ca7d285dc817f",
+    "classification": "actionable",
+    "rationale": "Most of normalize is executable logic. It has independent branches for terms, factors, division, concatenation and ternary expressions. The factor collector or division normalizer could be extracted and tested without changing the dispatch API.",
+    "source_url": "https://github.com/numpy/numpy/blob/afcbc6d21a88a7b59c5bfe115198e24ed51b3dae/numpy/f2py/symbolic.py#L790"
+  },
+  {
+    "repo": "numpy/numpy",
+    "severity": "warning",
+    "diagnostic": {
+      "rule": "no-deep-nesting",
+      "severity": "warning",
+      "category": "Architecture",
+      "message": "Nesting depth 6 exceeds max 5",
+      "help": "Extract nested logic into helper functions or use early returns",
+      "file_path": "numpy/f2py/crackfortran.py",
+      "line": 2693
+    },
+    "sha256": "00c3cbf5c1deafa75e773d720bca2da98c543429df1c7fe5c085dc4d8eb0d142",
+    "classification": "actionable",
+    "rationale": "Inside the attribute parser, adjacent branches for depend and check both initialize a list, split and normalize values, and append only unseen members. Extracting the common append operation would remove repeated nesting.",
+    "source_url": "https://github.com/numpy/numpy/blob/afcbc6d21a88a7b59c5bfe115198e24ed51b3dae/numpy/f2py/crackfortran.py#L2693"
+  },
+  {
+    "repo": "numpy/numpy",
+    "severity": "warning",
+    "diagnostic": {
+      "rule": "no-god-function",
+      "severity": "warning",
+      "category": "Architecture",
+      "message": "Function 'arctanh' is 52 lines (max 50)",
+      "help": "Break into smaller functions with single responsibilities",
+      "file_path": "numpy/lib/_scimath_impl.py",
+      "line": 591
+    },
+    "sha256": "00d4e186a73d43d53197138b90202c1587c36a7a6e40b967692b6882adf9e0d1",
+    "classification": "false-positive",
+    "rationale": "The reported 52-line arctanh wrapper documents its public API for 49 lines. The implementation adjusts the argument and delegates to NumPy in two statements.",
+    "source_url": "https://github.com/numpy/numpy/blob/afcbc6d21a88a7b59c5bfe115198e24ed51b3dae/numpy/lib/_scimath_impl.py#L591"
+  },
+  {
+    "repo": "numpy/numpy",
+    "severity": "warning",
+    "diagnostic": {
+      "rule": "no-god-function",
+      "severity": "warning",
+      "category": "Architecture",
+      "message": "Function 'fromfile' is 108 lines (max 50)",
+      "help": "Break into smaller functions with single responsibilities",
+      "file_path": "numpy/_core/records.py",
+      "line": 844
+    },
+    "sha256": "00d8e23185e89179193245ce1970907e70c210c92ffaaa7f32f5801ae12b3869",
+    "classification": "context-dependent",
+    "rationale": "An extensive docstring contributes 42 lines. The remaining code handles input streams, dtype and shape, byte-count validation and a read. Those steps form a coherent operation; extracting a shape helper may help, but the threshold does not settle the tradeoff.",
+    "source_url": "https://github.com/numpy/numpy/blob/afcbc6d21a88a7b59c5bfe115198e24ed51b3dae/numpy/_core/records.py#L844"
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "severity": "error",
+    "diagnostic": {
+      "rule": "pandas-inplace-assignment",
+      "severity": "error",
+      "category": "Pandas",
+      "message": "Assignment from method with inplace=True — result is always None",
+      "help": "Either use inplace=True without assignment, or remove inplace=True and assign the result",
+      "file_path": "pandas/tests/frame/methods/test_replace.py",
+      "line": 319
+    },
+    "sha256": "00b1370a320658918cdda46fc38ff266c48cfd23581c97083c9143e576b5bc5b",
+    "classification": "false-positive",
+    "rationale": "In this pandas release the replace regression test explicitly asserts that the inplace return is the same DataFrame. The rule's assumption that the result is always None conflicts with the tested contract.",
+    "source_url": "https://github.com/pandas-dev/pandas/blob/3dcc6fbbbebc5e85dd3e83fe49b382ca7735cae1/pandas/tests/frame/methods/test_replace.py#L319"
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "severity": "error",
+    "diagnostic": {
+      "rule": "pandas-inplace-assignment",
+      "severity": "error",
+      "category": "Pandas",
+      "message": "Assignment from method with inplace=True — result is always None",
+      "help": "Either use inplace=True without assignment, or remove inplace=True and assign the result",
+      "file_path": "pandas/tests/series/methods/test_drop_duplicates.py",
+      "line": 28
+    },
+    "sha256": "013fe184386ca68c6aa46745076544cd93033e6c33835fb4debc33f25c6ec543",
+    "classification": "false-positive",
+    "rationale": "The test assigns the drop_duplicates result to verify that it is None, then checks the mutated Series. The assignment is necessary to check the return contract.",
+    "source_url": "https://github.com/pandas-dev/pandas/blob/3dcc6fbbbebc5e85dd3e83fe49b382ca7735cae1/pandas/tests/series/methods/test_drop_duplicates.py#L28"
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "severity": "error",
+    "diagnostic": {
+      "rule": "pandas-inplace-assignment",
+      "severity": "error",
+      "category": "Pandas",
+      "message": "Assignment from method with inplace=True — result is always None",
+      "help": "Either use inplace=True without assignment, or remove inplace=True and assign the result",
+      "file_path": "pandas/tests/series/methods/test_drop_duplicates.py",
+      "line": 242
+    },
+    "sha256": "029d9293eb55e0f07015e7110c2d531cb9e5e7cd214c179a4ac48a7967fc1859",
+    "classification": "false-positive",
+    "rationale": "The keep=False case verifies both that the inplace call returns None and that it mutates the Series as expected. Capturing the result is intentional.",
+    "source_url": "https://github.com/pandas-dev/pandas/blob/3dcc6fbbbebc5e85dd3e83fe49b382ca7735cae1/pandas/tests/series/methods/test_drop_duplicates.py#L242"
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "severity": "error",
+    "diagnostic": {
+      "rule": "pandas-inplace-assignment",
+      "severity": "error",
+      "category": "Pandas",
+      "message": "Assignment from method with inplace=True — result is always None",
+      "help": "Either use inplace=True without assignment, or remove inplace=True and assign the result",
+      "file_path": "pandas/tests/frame/methods/test_drop_duplicates.py",
+      "line": 355
+    },
+    "sha256": "02b5756d9297cb6899ec3dc56a470e190bbd0b2bfe4aedc45aa4d6588ca9f524",
+    "classification": "false-positive",
+    "rationale": "The test checks an empty mutated DataFrame and separately asserts that the recorded inplace return is None. Removing the assignment would remove coverage of that return value.",
+    "source_url": "https://github.com/pandas-dev/pandas/blob/3dcc6fbbbebc5e85dd3e83fe49b382ca7735cae1/pandas/tests/frame/methods/test_drop_duplicates.py#L355"
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "severity": "error",
+    "diagnostic": {
+      "rule": "pandas-inplace-assignment",
+      "severity": "error",
+      "category": "Pandas",
+      "message": "Assignment from method with inplace=True — result is always None",
+      "help": "Either use inplace=True without assignment, or remove inplace=True and assign the result",
+      "file_path": "pandas/tests/series/methods/test_replace.py",
+      "line": 733
+    },
+    "sha256": "03948fcd7da5072a92f97e3075b06d6e1f8d6674994474adbc1273a51ba4e651",
+    "classification": "false-positive",
+    "rationale": "The Series.replace test explicitly verifies that inplace=True returns the original Series in this release, in addition to checking its updated contents. An unconditional diagnostic claiming a None result is incorrect here.",
+    "source_url": "https://github.com/pandas-dev/pandas/blob/3dcc6fbbbebc5e85dd3e83fe49b382ca7735cae1/pandas/tests/series/methods/test_replace.py#L733"
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "severity": "warning",
+    "diagnostic": {
+      "rule": "no-assert-in-production",
+      "severity": "warning",
+      "category": "Correctness",
+      "message": "assert statements are stripped with python -O flag",
+      "help": "Use explicit if/raise for production validation",
+      "file_path": "pandas/core/groupby/generic.py",
+      "line": 2800
+    },
+    "sha256": "0033f5a1a8c8bf7b5c90e4f9b0d40b47cfca8ed54015640063612e5daebd649e",
+    "classification": "false-positive",
+    "rationale": "The public transform method dispatches dictionary and list-like inputs to this private helper. The dictionary branch has already returned, so the assertion documents the remaining list-like invariant. The caller handles other inputs separately.",
+    "source_url": "https://github.com/pandas-dev/pandas/blob/3dcc6fbbbebc5e85dd3e83fe49b382ca7735cae1/pandas/core/groupby/generic.py#L2800"
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "severity": "warning",
+    "diagnostic": {
+      "rule": "no-giant-module",
+      "severity": "warning",
+      "category": "Architecture",
+      "message": "Module has 1971 lines (max 500) — consider splitting",
+      "help": "Extract related functions into separate modules",
+      "file_path": "pandas/core/arrays/interval.py",
+      "line": 1
+    },
+    "sha256": "0044fc1275be371362b4503be8a6fe574faf7642d6f93f851ac5c86fe980c6b2",
+    "classification": "context-dependent",
+    "rationale": "The module implements the IntervalArray extension type, with a small conversion helper. Its file length exceeds the configured limit, but the warning identifies no independently useful split in that type's interface.",
+    "source_url": "https://github.com/pandas-dev/pandas/blob/3dcc6fbbbebc5e85dd3e83fe49b382ca7735cae1/pandas/core/arrays/interval.py#L1"
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "severity": "warning",
+    "diagnostic": {
+      "rule": "no-god-function",
+      "severity": "warning",
+      "category": "Architecture",
+      "message": "Function 'searchsorted' is 82 lines (max 50)",
+      "help": "Break into smaller functions with single responsibilities",
+      "file_path": "pandas/core/algorithms.py",
+      "line": 1469
+    },
+    "sha256": "0045f233a681823fa8bd84aa825225c0d43ef58fccd264c642eba38d48965b19",
+    "classification": "false-positive",
+    "rationale": "The 82-line span includes a long public docstring describing ordering, parameters and return values. The implementation prepares the sorter and compatible dtypes, then delegates to the array's searchsorted. A long API description pushed this focused operation over the limit.",
+    "source_url": "https://github.com/pandas-dev/pandas/blob/3dcc6fbbbebc5e85dd3e83fe49b382ca7735cae1/pandas/core/algorithms.py#L1469"
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "severity": "warning",
+    "diagnostic": {
+      "rule": "no-giant-module",
+      "severity": "warning",
+      "category": "Architecture",
+      "message": "Module has 707 lines (max 500) — consider splitting",
+      "help": "Extract related functions into separate modules",
+      "file_path": "pandas/core/arrays/numpy_.py",
+      "line": 1
+    },
+    "sha256": "005388f3bc56a4fcce2d83948567e58100ea4f4eb8346ed104198401ca28b710",
+    "classification": "context-dependent",
+    "rationale": "The file contains one top-level class, NumpyExtensionArray. Splitting a single extension type across files has a maintenance cost and the line count offers no evidence that a split would repay it.",
+    "source_url": "https://github.com/pandas-dev/pandas/blob/3dcc6fbbbebc5e85dd3e83fe49b382ca7735cae1/pandas/core/arrays/numpy_.py#L1"
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "severity": "warning",
+    "diagnostic": {
+      "rule": "too-many-arguments",
+      "severity": "warning",
+      "category": "Architecture",
+      "message": "Function 'to_latex' has 21 arguments (max 7)",
+      "help": "Group related arguments into a dataclass or TypedDict",
+      "file_path": "pandas/core/generic.py",
+      "line": 3383
+    },
+    "sha256": "005be6ec3f6b0ae17d33796ff692601163c646a92235a4a0b012c232d76a07e4",
+    "classification": "false-positive",
+    "rationale": "The flagged definition is an overload declaration with an ellipsis body. It mirrors public formatting options to describe the return type when a buffer is supplied. Its parameters cannot be redesigned independently of the runtime signature.",
+    "source_url": "https://github.com/pandas-dev/pandas/blob/3dcc6fbbbebc5e85dd3e83fe49b382ca7735cae1/pandas/core/generic.py#L3383"
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "severity": "error",
+    "diagnostic": {
+      "rule": "critical-complexity",
+      "severity": "error",
+      "category": "Complexity",
+      "message": "Function 'from_estimator' has cyclomatic complexity 28 (max 15)",
+      "help": "Break into smaller functions or simplify conditional logic",
+      "file_path": "sklearn/inspection/_plot/decision_boundary.py",
+      "line": 471
+    },
+    "sha256": "068dce6d0f9b720e1a97b5d1164e8687812c85982645f3eec7596af021bfa3a7",
+    "classification": "actionable",
+    "rationale": "DecisionBoundaryDisplay.from_estimator validates inputs, constructs the grid, infers class count through several estimator-specific branches, reshapes predictions, then plots them. Class-count inference and response shaping have separate inputs and outputs that could be tested independently.",
+    "source_url": "https://github.com/scikit-learn/scikit-learn/blob/866c0f51e7560ef0303cbcc5f159df5382ea9e3f/sklearn/inspection/_plot/decision_boundary.py#L471"
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "severity": "error",
+    "diagnostic": {
+      "rule": "critical-complexity",
+      "severity": "error",
+      "category": "Complexity",
+      "message": "Function '_fit' has cyclomatic complexity 52 (max 15)",
+      "help": "Break into smaller functions or simplify conditional logic",
+      "file_path": "sklearn/neighbors/_base.py",
+      "line": 467
+    },
+    "sha256": "091baca2ca7e8921fda27be7d7018a13d3aaca1c44414eef5ea996eade52744f",
+    "classification": "actionable",
+    "rationale": "NeighborsBase._fit normalizes classification targets, resolves effective distance metrics, and chooses and builds a search backend. The target-encoding branch and the metric-selection branch are distinct refactoring candidates.",
+    "source_url": "https://github.com/scikit-learn/scikit-learn/blob/866c0f51e7560ef0303cbcc5f159df5382ea9e3f/sklearn/neighbors/_base.py#L467"
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "severity": "error",
+    "diagnostic": {
+      "rule": "no-exec",
+      "severity": "error",
+      "category": "Security",
+      "message": "Avoid exec() — it executes arbitrary code",
+      "help": "Refactor to avoid dynamic code execution",
+      "file_path": "sklearn/externals/array_api_compat/_internal.py",
+      "line": 64
+    },
+    "sha256": "104e749bf19ee905ddb575b894a1d6b8ec15f22badf84a22d280ee921913d67a",
+    "classification": "false-positive",
+    "rationale": "The vendored compatibility wrapper imports a named backend and mirrors its public namespace. The in-tree callers pass fixed backend module names. The warning identifies the primitive accurately, but its arbitrary-code concern has no input source at the reviewed call sites.",
+    "source_url": "https://github.com/scikit-learn/scikit-learn/blob/866c0f51e7560ef0303cbcc5f159df5382ea9e3f/sklearn/externals/array_api_compat/_internal.py#L64"
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "severity": "error",
+    "diagnostic": {
+      "rule": "critical-complexity",
+      "severity": "error",
+      "category": "Complexity",
+      "message": "Function '_safe_repr' has cyclomatic complexity 38 (max 15)",
+      "help": "Break into smaller functions or simplify conditional logic",
+      "file_path": "sklearn/utils/_pprint.py",
+      "line": 356
+    },
+    "sha256": "10a2584062d71f925f54396d15ecd5869ebd16fd2bb56ef843f86c8592d30c4c",
+    "classification": "actionable",
+    "rationale": "The dictionary and estimator formatting branches both manage recursion and depth, iterate sorted key/value pairs and accumulate readability flags. A shared formatting helper could remove repeated logic while preserving their different output delimiters.",
+    "source_url": "https://github.com/scikit-learn/scikit-learn/blob/866c0f51e7560ef0303cbcc5f159df5382ea9e3f/sklearn/utils/_pprint.py#L356"
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "severity": "error",
+    "diagnostic": {
+      "rule": "critical-complexity",
+      "severity": "error",
+      "category": "Complexity",
+      "message": "Function '_lars_path_solver' has cyclomatic complexity 67 (max 15)",
+      "help": "Break into smaller functions or simplify conditional logic",
+      "file_path": "sklearn/linear_model/_least_angle.py",
+      "line": 414
+    },
+    "sha256": "1e76af99a12a51b0119b8f7b4e3f2d96d67986bc82240b5e1cf6645b85c78319",
+    "classification": "context-dependent",
+    "rationale": "The branches implement the least-angle path algorithm, including active-set updates, numerical safeguards and stopping conditions. The threshold identifies a difficult function to review, but choosing a safe extraction requires numerical and performance context.",
+    "source_url": "https://github.com/scikit-learn/scikit-learn/blob/866c0f51e7560ef0303cbcc5f159df5382ea9e3f/sklearn/linear_model/_least_angle.py#L414"
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "severity": "warning",
+    "diagnostic": {
+      "rule": "no-god-function",
+      "severity": "warning",
+      "category": "Architecture",
+      "message": "Function 'fit' is 111 lines (max 50)",
+      "help": "Break into smaller functions with single responsibilities",
+      "file_path": "sklearn/linear_model/_least_angle.py",
+      "line": 1701
+    },
+    "sha256": "00049946dfe79ed86dcc91e58cfa3e60e3d23b7c4f4928a50c475b8a8c28bde6",
+    "classification": "actionable",
+    "rationale": "LarsCV.fit prepares cross-validation folds, runs fits in parallel, interpolates and aggregates fold losses, then refits. Constructing the loss path from the fold results is a distinct operation with a clear input and output.",
+    "source_url": "https://github.com/scikit-learn/scikit-learn/blob/866c0f51e7560ef0303cbcc5f159df5382ea9e3f/sklearn/linear_model/_least_angle.py#L1701"
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "severity": "warning",
+    "diagnostic": {
+      "rule": "no-god-function",
+      "severity": "warning",
+      "category": "Architecture",
+      "message": "Function 'make_sparse_coded_signal' is 85 lines (max 50)",
+      "help": "Break into smaller functions with single responsibilities",
+      "file_path": "sklearn/datasets/_samples_generator.py",
+      "line": 1537
+    },
+    "sha256": "000acf6f21155addb68b431133df3029c1186733bd67fd85d8bc4a9631375813",
+    "classification": "context-dependent",
+    "rationale": "The 85-line span includes a parameter reference, return shapes and a worked example. The implementation generates a dictionary and sparse coefficients, then multiplies them. The measured span alone gives little reason to split the generator.",
+    "source_url": "https://github.com/scikit-learn/scikit-learn/blob/866c0f51e7560ef0303cbcc5f159df5382ea9e3f/sklearn/datasets/_samples_generator.py#L1537"
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "severity": "warning",
+    "diagnostic": {
+      "rule": "no-god-function",
+      "severity": "warning",
+      "category": "Architecture",
+      "message": "Function 'fit' is 70 lines (max 50)",
+      "help": "Break into smaller functions with single responsibilities",
+      "file_path": "sklearn/svm/_classes.py",
+      "line": 290
+    },
+    "sha256": "0010f16f3cb1b51929a62e26d1619bb4d0632e0758fd96ff934b315833217b70",
+    "classification": "context-dependent",
+    "rationale": "LinearSVC.fit documents its public API, validates inputs, calls the existing solver helper and adapts its outputs for API compatibility. Long call formatting and the docstring contribute to its 70-line span.",
+    "source_url": "https://github.com/scikit-learn/scikit-learn/blob/866c0f51e7560ef0303cbcc5f159df5382ea9e3f/sklearn/svm/_classes.py#L290"
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "severity": "warning",
+    "diagnostic": {
+      "rule": "no-god-function",
+      "severity": "warning",
+      "category": "Architecture",
+      "message": "Function '__init__' is 59 lines (max 50)",
+      "help": "Break into smaller functions with single responsibilities",
+      "file_path": "sklearn/ensemble/_forest.py",
+      "line": 1515
+    },
+    "sha256": "005269a9befe826cd979c3a8cdfd341e53ee3fa7b1d85fe49bd1776d9c8a24d4",
+    "classification": "context-dependent",
+    "rationale": "The forest constructor exposes named estimator parameters, forwards them to its base class and assigns the rest to attributes. The public signature and the one-parameter-per-line layout account for much of the length. The assignments follow the project's estimator convention.",
+    "source_url": "https://github.com/scikit-learn/scikit-learn/blob/866c0f51e7560ef0303cbcc5f159df5382ea9e3f/sklearn/ensemble/_forest.py#L1515"
+  },
+  {
+    "repo": "scikit-learn/scikit-learn",
+    "severity": "warning",
+    "diagnostic": {
+      "rule": "high-complexity",
+      "severity": "warning",
+      "category": "Complexity",
+      "message": "Function '_fit' has cyclomatic complexity 17 (max 15)",
+      "help": "Break into smaller functions or simplify conditional logic",
+      "file_path": "sklearn/decomposition/_pca.py",
+      "line": 481
+    },
+    "sha256": "0062306de6ead8da5e831e433f54ae72f17fb772a970132a6f9483ebdc5195fd",
+    "classification": "context-dependent",
+    "rationale": "PCA._fit selects a solver for sparse, small or tall inputs and delegates the actual calculations to existing helpers. The dispatch conditions express supported solver policy. Their count alone does not establish a change worth making.",
+    "source_url": "https://github.com/scikit-learn/scikit-learn/blob/866c0f51e7560ef0303cbcc5f159df5382ea9e3f/sklearn/decomposition/_pca.py#L481"
+  }
+]
