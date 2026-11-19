@@ -17,6 +17,8 @@ AI coding agents ship code fast — but fast doesn't mean safe. Every `eval()` a
 
 ## How it works
 
+In a [benchmark on five large Python repositories](benchmarks/results/large-repo-study.md), 18 of 50 source-reviewed findings suggested a concrete change. The report shows where the checks helped, where they gave misleading advice, and how to reproduce the results.
+
 PyCodeGate detects your project's context: framework (Django, FastAPI, Flask), Python version, package manager (uv, poetry, pip), and test framework. That context drives which rules are active — Django projects get SQL injection checks, FastAPI projects get async-correctness checks, and so on.
 
 It then runs analysis passes **in parallel**: a lint pass across 9 categories (Security, Correctness, Complexity, Architecture, Performance, Structure, Imports, Dependencies, Dead Code), a dead-code pass powered by [Vulture](https://github.com/jendrikseipp/vulture) that finds unused functions, classes, imports, and variables, and an optional dependency-vulnerability pass via [pip-audit](https://github.com/pypa/pip-audit).

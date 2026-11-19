@@ -1,0 +1,7 @@
+{
+  "django": {"repository": "django/django", "tag": "6.1.3", "commit": "f16e25dcb9fe55734ba4ea2b00ac34405b7df74a"},
+  "pandas": {"repository": "pandas-dev/pandas", "tag": "v3.1.1", "commit": "3dcc6fbbbebc5e85dd3e83fe49b382ca7735cae1"},
+  "numpy": {"repository": "numpy/numpy", "tag": "v2.5.5", "commit": "afcbc6d21a88a7b59c5bfe115198e24ed51b3dae"},
+  "scikit-learn": {"repository": "scikit-learn/scikit-learn", "tag": "1.9.1", "commit": "866c0f51e7560ef0303cbcc5f159df5382ea9e3f"},
+  "transformers": {"repository": "huggingface/transformers", "tag": "v5.23.0", "commit": "52b080b6416a7897e2af90febeb4dfad22b84d19"}
+}

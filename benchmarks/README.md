@@ -1,5 +1,7 @@
 # Precision benchmark
 
+[Large-repository usefulness study](results/large-repo-study.md) compares five tagged Git projects and reviews 50 findings against their source. It includes per-project counts, the individual review decisions and commands to reproduce the sample.
+
 A quality gate is only useful if it stays quiet on good code. This benchmark runs
 PyCodeGate against the source of widely used, idiomatic PyPI packages and reports
 the findings per rule. A rule that fires heavily here is a false-positive suspect.
